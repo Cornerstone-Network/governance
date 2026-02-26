@@ -12,8 +12,8 @@ The Cornerstone ID Credential is issued by the **Cornerstone Network** to all us
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **2.0**   | 26-Feb-2026 | JSON-LD format finalization; removed AnonCreds-specific attributes (`birthdate_dateint`, `fsa_code`); removed Email+Phone OTP verification path; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
-| **1.0**   | TBA         | Initial release                     | Mathieu Glaude |
+| **0.9**   | 26-Feb-2026 | JSON-LD format finalization; removed AnonCreds-specific attributes (`birthdate_dateint`, `fsa_code`); removed Email+Phone OTP verification path; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
+| **0.1**   | TBA         | Initial release                     | Mathieu Glaude |
 
 ## 2. Credential Overview
 
@@ -35,7 +35,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
 | **Credential:** | Cornerstone ID                                            |
-| **Schema:**     | Cornerstone ID v2.0                                       |
+| **Schema:**     | Cornerstone ID v0.9                                       |
 | **Issuer:**     | Cornerstone Network                                       |
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`) |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                      |
@@ -135,7 +135,7 @@ The Cornerstone ID Credential conforms to W3C Verifiable Credentials (JSON-LD) a
 - **Schema Versioning:** Semantic versioning. Breaking changes produce a new major version.
 - **Contexts:**
   - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/cornerstone-id-v2.json` *(exact URL TBD)*
+  - `https://trustinfrastructure.com/cornerstone/contexts/cornerstone-id-v0.9.json` *(exact URL TBD)*
 
 ### 4.2 Subject of the Credential
 
@@ -240,9 +240,9 @@ The subject is the **individual holder**, bound to their Cornerstone platform ac
   <tr><th>Notes</th><td>Evidence retained for five years in compliance with regulatory requirements. Full evidence details available in the <code>evidence</code> array of the credential.</td></tr>
 </table>
 
-### 4.4 Removed Attributes (v2.0)
+### 4.4 Removed Attributes (v0.9)
 
-The following attributes were present in v1.0 and have been removed:
+The following attributes were present in earlier drafts and have been removed:
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
@@ -461,7 +461,7 @@ The following fields MUST NEVER appear in a Cornerstone ID Credential:
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/cornerstone-id-v2.json"
+    "https://trustinfrastructure.com/cornerstone/contexts/cornerstone-id-v0.9.json"
   ],
   "type": ["VerifiableCredential", "CornerstoneID"],
   "issuer": "did:web:trustinfrastructure.com:cornerstone",

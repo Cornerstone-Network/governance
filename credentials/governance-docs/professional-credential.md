@@ -10,7 +10,7 @@ The Professional Credential is issued by the **Cornerstone Network** (as a servi
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **1.0**   | 26-Feb-2026 | JSON-LD format finalization; removed `status` field (revocation replaces status tracking); updated issuer to Cornerstone Network; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
+| **0.9**   | 26-Feb-2026 | JSON-LD format finalization; removed `status` field (revocation replaces status tracking); updated issuer to Cornerstone Network; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
 | **0.2**   | 4-Dec-2025  | Refocused on employment/affiliation (regulatory claims moved to Accreditation Credential) | Mathieu Glaude |
 | **0.1**   | 3-Sep-2025  | Initial draft                        | Mathieu Glaude |
 
@@ -23,7 +23,7 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
 | **Credential:** | Professional Credential                                     |
-| **Schema:**     | Professional Credential v1.0                                |
+| **Schema:**     | Professional Credential v0.9                                |
 | **Issuer:**     | Cornerstone Network (on behalf of Network Partners)         |
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
@@ -46,7 +46,7 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 
 - **Removed `status` field.** A credential with `status: terminated` is semantically contradictory — why would a valid, signed credential assert that the relationship it attests to no longer exists? When an affiliation ends, the credential is revoked via the W3C Bitstring Status List. A revoked credential can still be presented by the holder, and the verifier sees the revocation status through the credential status mechanism. This is the standard pattern across all production VC ecosystems studied.
 
-- **Issued by Cornerstone Network as a service.** While conceptually this is an employer attestation, Cornerstone Network issues these as a service on behalf of Network Partners for v1. Network partners provide employment/affiliation data out of band. The employer registration process is managed by Cornerstone. No employer-facing issuance portal is needed for v1.
+- **Issued by Cornerstone Network as a service.** While conceptually this is an employer attestation, Cornerstone Network issues these as a service on behalf of Network Partners for the initial release. Network partners provide employment/affiliation data out of band. The employer registration process is managed by Cornerstone. No employer-facing issuance portal is needed for the initial release.
 
 - **Independent from other credentials.** The Professional Credential is independent from the Accreditation Credential and Portfolio Issuer Credential. A professional may hold only a Professional Credential (employed but not licensed), only an Accreditation Credential (licensed but not employed), or both. No hard dependencies are enforced between them.
 
@@ -54,7 +54,7 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 
 - **vLEI Engagement Context Role (ECR)**: The ECR credential follows the same pattern — an organization attests to an individual's role, and status changes are handled by revoking and reissuing the credential. The ECR also uses free-form role strings rather than enforcing an enum for role titles.
 
-### 2.3 Removed Attributes (v1.0)
+### 2.3 Removed Attributes (v0.9)
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
@@ -66,7 +66,7 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 
 The Professional Credential is issued by the **Cornerstone Network**, acting as credential authority on behalf of Network Partners. Each credential is issued only after the employer organization provides affiliation data and the holder's Cornerstone ID is verified.
 
-**Operational note**: Network partners provide employment/affiliation data to Cornerstone out of band. The employer registration process is managed by Cornerstone. No employer-facing issuance portal is required for v1.
+**Operational note**: Network partners provide employment/affiliation data to Cornerstone out of band. The employer registration process is managed by Cornerstone. No employer-facing issuance portal is required for the initial release.
 
 ### 3.2 Schema and Credential Definition Governance
 
@@ -114,7 +114,7 @@ Re-issuance involves Cornerstone issuing a new credential reflecting current sta
 - **Schema Versioning:** Semantic versioning. Breaking changes produce a new major version.
 - **Contexts:**
   - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/professional-credential-v1.json` *(exact URL TBD)*
+  - `https://trustinfrastructure.com/cornerstone/contexts/professional-credential-v0.9.json` *(exact URL TBD)*
 
 ### 4.2 Subject of the Credential
 
@@ -235,7 +235,7 @@ The subject is the **individual holder**, bound to an **organizational affiliati
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/professional-credential-v1.json"
+    "https://trustinfrastructure.com/cornerstone/contexts/professional-credential-v0.9.json"
   ],
   "type": ["VerifiableCredential", "ProfessionalCredential"],
   "issuer": "did:web:trustinfrastructure.com:cornerstone",

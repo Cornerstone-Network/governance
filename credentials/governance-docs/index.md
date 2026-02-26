@@ -6,12 +6,12 @@ This section contains governance documentation for all Cornerstone Network-manag
 
 | Credential | Description | Issuer |
 |------------|-------------|--------|
-| [Cornerstone ID](cornerstone-id.md) | Foundational person-level identity credential | Cornerstone Platform Inc. |
-| [Home Credential](home-credential.md) | Property ownership and homeownership verification | Cornerstone Platform Inc. |
-| [Professional Credential](professional-credential.md) | Organizational affiliation (employment/contractor/delegate) | Employer Organizations |
-| [Accreditation Credential](accreditation-credential.md) | Professional license/registration from regulatory body | Cornerstone Platform Inc. |
+| [Cornerstone ID](cornerstone-id.md) | Foundational person-level identity credential | Cornerstone Network |
+| [Home Credential](home-credential.md) | Property ownership and homeownership verification | Cornerstone Network |
+| [Professional Credential](professional-credential.md) | Organizational affiliation (employment/contractor/delegate) | Cornerstone Network |
+| [Accreditation Credential](accreditation-credential.md) | Professional license/registration from regulatory body | Cornerstone Network |
 | [Portfolio Issuer](portfolio-issuer.md) | Portfolio issuer authorization | Cornerstone Network |
-| [Property Access Authorization](property-access-authorization.md) | Property access permissions | Portfolio Issuers |
+| [Property Access Authorization](property-access-authorization.md) | Property access authorization | Cornerstone Network |
 
 ## Governance Framework
 
@@ -25,4 +25,4 @@ All credentials follow the Cornerstone Network governance framework which ensure
 ## Version Control
 
 All governance documents are version-controlled in the
-[Cornerstone Network GitHub repository](https://github.com/Canadian-Open-Property-Association/governance).
+[Cornerstone Network GitHub repository](https://github.com/Cornerstone-Network/governance).

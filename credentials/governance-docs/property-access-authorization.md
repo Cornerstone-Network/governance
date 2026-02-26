@@ -12,8 +12,8 @@ The PAAC is issued by the **Cornerstone Network** on behalf of homeowners to mem
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **2.0**   | 26-Feb-2026 | Replaced `property_address` with `pid` for atomicity; updated signing model to Cornerstone Network on behalf of homeowners; updated schema hosting; added design rationale | Mathieu Glaude |
-| **1.0**   | TBA         | Initial release                      | Mathieu Glaude |
+| **0.9**   | 26-Feb-2026 | Replaced `property_address` with `pid` for atomicity; updated signing model to Cornerstone Network on behalf of homeowners; updated schema hosting; added design rationale | Mathieu Glaude |
+| **0.1**   | TBA         | Initial release                      | Mathieu Glaude |
 
 ## 2. Credential Overview
 
@@ -30,7 +30,7 @@ The PAAC is a verifiable credential (VC) that grants selective access to propert
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
 | **Credential:** | Property Access Authorization Credential (PAAC) / "Letter of Authorization" |
-| **Schema:**     | PAAC v2.0                                                   |
+| **Schema:**     | PAAC v0.9                                                   |
 | **Issuer:**     | Cornerstone Network (on behalf of homeowners)               |
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
@@ -61,11 +61,11 @@ The PAAC is a verifiable credential (VC) that grants selective access to propert
 
 - **Replaced `property_address` (JSON object) with `pid` (String).** The full property address already lives in the Home Credential. The PAAC uses `property_id` (platform internal UUID) and `pid` (provincial land title registry identifier) to resolve the link to the property. This avoids triple-duplication of address data across Cornerstone ID (`postal_address`), Home Credential (`property_address`), and PAAC.
 
-- **Signing model: Cornerstone Network signs on behalf of homeowners.** For v1, homeowner onboarding happens through professionals, and PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform flow and recorded in the `authorization_evidence` reference. The `homeowner_id` and `homeowner_did` identify the authorizing homeowner. Granular homeowner controls for modifying/revoking PAACs are planned for a future release.
+- **Signing model: Cornerstone Network signs on behalf of homeowners.** For the initial release, homeowner onboarding happens through professionals, and PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform flow and recorded in the `authorization_evidence` reference. The `homeowner_id` and `homeowner_did` identify the authorizing homeowner. Granular homeowner controls for modifying/revoking PAACs are planned for a future release.
 
 - **Access levels defined but enforcement needs validation.** The four access levels and ten `data_scope` values need to be validated against the actual platform implementation before shipping. The dev team should ensure enforcement logic matches these definitions.
 
-### 2.3 Removed Attributes (v2.0)
+### 2.3 Removed Attributes (v0.9)
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
@@ -75,7 +75,7 @@ The PAAC is a verifiable credential (VC) that grants selective access to propert
 
 ### 3.1 Issuer
 
-The PAAC is issued by the **Cornerstone Network** on behalf of homeowners. For v1, PAACs are auto-issued during homeowner onboarding by professionals.
+The PAAC is issued by the **Cornerstone Network** on behalf of homeowners. For the initial release, PAACs are auto-issued during homeowner onboarding by professionals.
 
 ### 3.2 Data Scope Values
 
@@ -138,7 +138,7 @@ A PAAC will be revoked in cases such as:
 - **Schema ID (URI):** `https://trustinfrastructure.com/cornerstone/schemas/property-access-authorization.json` *(exact URL TBD)*
 - **Contexts:**
   - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v2.json` *(exact URL TBD)*
+  - `https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v0.9.json` *(exact URL TBD)*
 
 ### 4.2 Subject of the Credential
 
@@ -153,7 +153,7 @@ The PAAC is issued when ALL of the following are satisfied:
 4. Authorization scope, purpose, access level, and validity period are defined
 5. Platform validates homeowner authority and recipient identity
 
-**For v1**: PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform onboarding flow.
+**For the initial release**: PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform onboarding flow.
 
 ## 6. Refresh & Expiration
 
@@ -206,7 +206,7 @@ This credential does NOT:
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v2.json"
+    "https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v0.9.json"
   ],
   "type": ["VerifiableCredential", "PropertyAccessAuthorizationCredential"],
   "issuer": "did:web:trustinfrastructure.com:cornerstone",

@@ -13,7 +13,7 @@ The Accreditation Credential is issued by the **Cornerstone Network** and repres
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **1.0**   | 26-Feb-2026 | JSON-LD format finalization; removed `licence_status` and `discipline_notes` (status managed via credential status mechanism); updated schema hosting; added design rationale with industry research references | Mathieu Glaude |
+| **0.9**   | 26-Feb-2026 | JSON-LD format finalization; removed `licence_status` and `discipline_notes` (status managed via credential status mechanism); updated schema hosting; added design rationale with industry research references | Mathieu Glaude |
 | **0.1**   | 4-Dec-2025  | Initial draft (split from Professional Credential) | Mathieu Glaude |
 
 ## 2. Credential Overview
@@ -31,7 +31,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
 | **Credential:** | Accreditation Credential                                    |
-| **Schema:**     | Accreditation Credential v1.0                               |
+| **Schema:**     | Accreditation Credential v0.9                               |
 | **Issuer:**     | Cornerstone Network                                         |
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
@@ -41,7 +41,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 | **#** | **Name**            | **Attribute**          | **Data Type**       | **Required** | **Notes** |
 |-------|---------------------|------------------------|---------------------|--------------|-----------|
 | 001   | Cornerstone ID Reference | `cornerstone_id` | DID/URI             | Yes          | Reference to holder's Cornerstone ID. |
-| 002   | Profession Category | `profession_category`  | String              | Yes          | Free-form for v1 (e.g., "Real Estate Broker", "Appraiser"). |
+| 002   | Profession Category | `profession_category`  | String              | Yes          | Free-form for the initial release (e.g., "Real Estate Broker", "Appraiser"). |
 | 003   | Licence Number      | `licence_number`       | String              | Yes          | Regulatory licence/registration number. |
 | 004   | Licence Expiry      | `licence_expiry`       | String (YYYY-MM-DD) | Yes          | Expiry date from regulator record. |
 | 005   | Regulator Name      | `regulator_name`       | String              | Yes          | e.g., "RECO", "BCFSA". |
@@ -59,7 +59,7 @@ This credential underwent the most significant design changes in this version, i
 
 - **Removed `discipline_notes`**. Disciplinary records are mutable, narrative, and sensitive. Baking them into a signed credential creates three problems: (1) **Immutability conflict** — the credential would need to be reissued every time discipline status changes; (2) **Staleness risk** — a credential showing "no discipline" could be stale when conditions were added; (3) **Privacy risk** — disciplinary notes are sensitive data that exists in the signed blob even with selective disclosure. Verifiers who need detailed disciplinary information can check the regulator's public registry, which is linked via `regulator_uri`. This separation of concerns follows the pattern used by every production credential ecosystem studied.
 
-- **`profession_category` is free-form for v1.** To be standardized with a controlled vocabulary in a future version. Current examples: "Real Estate Broker", "Real Estate Representative", "Appraiser", "Mortgage Broker".
+- **`profession_category` is free-form for the initial release.** To be standardized with a controlled vocabulary in a future version. Current examples: "Real Estate Broker", "Real Estate Representative", "Appraiser", "Mortgage Broker".
 
 - **Cornerstone Network verifies against regulators manually.** Cornerstone verifies against regulator registries (RECO, BCFSA) before issuance. There is a process to get the information and provide it to the network so that credential offers pick up the right information. The verification process and evidence are captured via the `evidence` reference for FINTRAC compliance and audit trail.
 
@@ -89,7 +89,7 @@ This credential underwent the most significant design changes in this version, i
                                      +---------------------------+
 ```
 
-### 2.3 Removed Attributes (v1.0)
+### 2.3 Removed Attributes (v0.9)
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
@@ -155,7 +155,7 @@ Re-issuance involves re-verification against regulator registry and issuance of 
 - **Schema Versioning:** Semantic versioning. Breaking changes produce a new major version.
 - **Contexts:**
   - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/accreditation-credential-v1.json` *(exact URL TBD)*
+  - `https://trustinfrastructure.com/cornerstone/contexts/accreditation-credential-v0.9.json` *(exact URL TBD)*
 
 ### 4.2 Subject of the Credential
 
@@ -181,7 +181,7 @@ The subject is the **individual holder**, bound to a **professional licence** at
 
 <table>
   <tr><th>Attribute</th><td><code>profession_category</code></td></tr>
-  <tr><th>Description</th><td>Professional category. Free-form for v1; to be standardized with controlled vocabulary in future version.</td></tr>
+  <tr><th>Description</th><td>Professional category. Free-form for the initial release; to be standardized with controlled vocabulary in future version.</td></tr>
   <tr><th>Source</th><td>Provincial regulator registry.</td></tr>
   <tr><th>Data Type</th><td>String</td></tr>
   <tr><th>Examples</th><td><code>Real Estate Broker</code>, <code>Real Estate Representative</code>, <code>Appraiser</code>, <code>Mortgage Broker</code></td></tr>
@@ -293,7 +293,7 @@ No production verifiable credential implementations exist for real estate profes
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/accreditation-credential-v1.json"
+    "https://trustinfrastructure.com/cornerstone/contexts/accreditation-credential-v0.9.json"
   ],
   "type": ["VerifiableCredential", "AccreditationCredential"],
   "issuer": "did:web:trustinfrastructure.com:cornerstone",

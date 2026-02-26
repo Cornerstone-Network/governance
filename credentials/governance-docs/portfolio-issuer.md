@@ -10,8 +10,8 @@ The Portfolio Issuer Credential is issued by the **Cornerstone Network** to prof
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **2.0**   | 26-Feb-2026 | JSON-LD format finalization; removed `canIssuePortfolios` (redundant), `professional_credential_ref` (no hard dependency), and `issuer_type` (single type for v1); added `cornerstone_id` reference; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
-| **1.0**   | TBA         | Initial release                      | Mathieu Glaude |
+| **0.9**   | 26-Feb-2026 | JSON-LD format finalization; removed `canIssuePortfolios` (redundant), `professional_credential_ref` (no hard dependency), and `issuer_type` (single type for the initial release); added `cornerstone_id` reference; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
+| **0.1**   | TBA         | Initial release                      | Mathieu Glaude |
 
 ## 2. Credential Overview
 
@@ -34,7 +34,7 @@ The credential is issued directly into the **Cornerstone Wallet**.
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
 | **Credential:** | Portfolio Issuer Credential                                 |
-| **Schema:**     | Portfolio Issuer v2.0                                       |
+| **Schema:**     | Portfolio Issuer v0.9                                       |
 | **Issuer:**     | Cornerstone Network                                         |
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
@@ -60,7 +60,7 @@ The credential is issued directly into the **Cornerstone Wallet**.
 
 - **Removed `professional_credential_ref`**. No hard dependency between credentials. The Portfolio Issuer, Professional, and Accreditation credentials are independent. In practice, a Portfolio Issuer is assumed to be a professional, but this is a business-level assumption, not a credential-level enforcement. Removing this reference makes the credentials truly independent.
 
-- **Removed `issuer_type`** (ORGANIZATIONAL vs DELEGATE). Single type for v1 to keep it simple. If the distinction becomes important in the future, it should be modeled as separate credential types (following the vLEI pattern of OOR vs ECR) rather than a type field within a single credential.
+- **Removed `issuer_type`** (ORGANIZATIONAL vs DELEGATE). Single type for the initial release to keep it simple. If the distinction becomes important in the future, it should be modeled as separate credential types (following the vLEI pattern of OOR vs ECR) rather than a type field within a single credential.
 
 - **Added `cornerstone_id` reference**. For consistency with all other credentials. Every non-foundation credential references the holder's Cornerstone ID.
 
@@ -70,13 +70,13 @@ The credential is issued directly into the **Cornerstone Wallet**.
 
 - **vLEI (GLEIF)**: Models role distinctions as separate credential types (Official Organizational Role vs Engagement Context Role) rather than a type field within one credential. If ORGANIZATIONAL vs DELEGATE distinction becomes needed, this is the pattern to follow.
 
-### 2.3 Removed Attributes (v2.0)
+### 2.3 Removed Attributes (v0.9)
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
 | `canIssuePortfolios` (Boolean, always `true`) | Redundant. The credential's existence is the authorization. A capability credential that always has a capability flag set to `true` adds no information. |
 | `professional_credential_ref` (String UUID) | No hard dependency between credentials. Portfolio Issuer is independent. Business-level assumption that portfolio issuers are professionals, not credential-level enforcement. |
-| `issuer_type` (String enum: ORGANIZATIONAL/DELEGATE) | Single type for v1. Future distinction should use separate credential types per vLEI pattern, not an attribute within one credential. |
+| `issuer_type` (String enum: ORGANIZATIONAL/DELEGATE) | Single type for the initial release. Future distinction should use separate credential types per vLEI pattern, not an attribute within one credential. |
 
 ## 3. Credential Details
 
@@ -114,7 +114,7 @@ A Portfolio Issuer Credential will be revoked in cases such as:
 - **Schema ID (URI):** `https://trustinfrastructure.com/cornerstone/schemas/portfolio-issuer.json` *(exact URL TBD)*
 - **Contexts:**
   - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/portfolio-issuer-v2.json` *(exact URL TBD)*
+  - `https://trustinfrastructure.com/cornerstone/contexts/portfolio-issuer-v0.9.json` *(exact URL TBD)*
 
 ### 4.2 Attributes
 
@@ -229,7 +229,7 @@ A Portfolio Issuer Credential will be revoked in cases such as:
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/portfolio-issuer-v2.json"
+    "https://trustinfrastructure.com/cornerstone/contexts/portfolio-issuer-v0.9.json"
   ],
   "type": ["VerifiableCredential", "PortfolioIssuerCredential"],
   "issuer": "did:web:trustinfrastructure.com:cornerstone",

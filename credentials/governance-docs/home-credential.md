@@ -10,7 +10,7 @@ The Home Credential is issued by the **Cornerstone Network** to Canadian homeown
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **1.0**   | 26-Feb-2026 | JSON-LD format finalization; replaced identity attributes with `cornerstone_id` reference for atomicity; removed `effective_year`; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
+| **0.9**   | 26-Feb-2026 | JSON-LD format finalization; replaced identity attributes with `cornerstone_id` reference for atomicity; removed `effective_year`; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
 | **0.3**   | 29-Sep-2025 | Updated credential schema information based on available attributes from Landcor | Mathieu Glaude |
 | **0.2**   | 3-Sep-2025  | Simplified and reformatted document  | Mathieu Glaude |
 | **0.1**   | 20-Aug-2025 | Initial draft                        | Mathieu Glaude |
@@ -30,7 +30,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
 | **Credential:** | Home Credential (Verified Homeowner)                       |
-| **Schema:**     | Home Credential v1.0                                       |
+| **Schema:**     | Home Credential v0.9                                       |
 | **Issuer:**     | Cornerstone Network                                        |
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)  |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                       |
@@ -58,7 +58,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 
 - **Replaced 4 identity attributes with `cornerstone_id` reference.** Previously, the Home Credential contained `given_names`, `family_name`, `birthdate_dateint`, and `verified_email` — all duplicated from the Cornerstone ID. These have been replaced with a single `cornerstone_id` reference. This follows the atomicity principle: each credential contains only the data it uniquely attests to. The Professional and Accreditation credentials already use this reference pattern. When a verifier needs both identity and property data, they request both credentials.
 
-- **Removed `effective_year`.** This was a BC-specific assessment concept (renovation-adjusted year) with limited value for verifiers outside British Columbia. Not needed for v1.
+- **Removed `effective_year`.** This was a BC-specific assessment concept (renovation-adjusted year) with limited value for verifiers outside British Columbia. Not needed for the initial release.
 
 - **`purchase_price` and `purchase_date` retained in the credential.** These are intentionally included as verified data from land title registry records captured at issuance time. They represent facts about the property transaction that are useful for fraud checks, appraisals, and loan risk assessment.
 
@@ -66,7 +66,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 
 - **vLEI (GLEIF)**: Uses a chained credential model where credentials reference parent credentials via "edges" rather than duplicating attributes. The Home Credential follows this same principle — the `cornerstone_id` reference creates the chain while keeping each credential atomic.
 
-### 2.3 Removed Attributes (v1.0)
+### 2.3 Removed Attributes (v0.9)
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
@@ -74,7 +74,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 | `family_name` (String) | Replaced by `cornerstone_id` reference. |
 | `birthdate_dateint` (Integer) | Replaced by `cornerstone_id` reference. Also, integer format was AnonCreds-specific. |
 | `verified_email` (String) | Replaced by `cornerstone_id` reference. |
-| `effective_year` (Integer) | BC-specific assessment concept with limited value for v1 verifiers. |
+| `effective_year` (Integer) | BC-specific assessment concept with limited value for initial release verifiers. |
 
 ## 3. Credential Details
 
@@ -134,7 +134,7 @@ Re-issuance involves re-verification and issuance of a new credential to the hol
 - **Schema Versioning:** Semantic versioning. Breaking changes produce a new major version.
 - **Contexts:**
   - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/home-credential-v1.json` *(exact URL TBD)*
+  - `https://trustinfrastructure.com/cornerstone/contexts/home-credential-v0.9.json` *(exact URL TBD)*
 
 ### 4.2 Subject of the Credential
 
@@ -358,7 +358,7 @@ Credential status managed via **W3C Bitstring Status List v1.1** with both revoc
 {
   "@context": [
     "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/home-credential-v1.json"
+    "https://trustinfrastructure.com/cornerstone/contexts/home-credential-v0.9.json"
   ],
   "type": ["VerifiableCredential", "HomeCredential"],
   "issuer": "did:web:trustinfrastructure.com:cornerstone",
