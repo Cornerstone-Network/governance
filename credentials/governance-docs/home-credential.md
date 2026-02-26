@@ -1,120 +1,128 @@
-# Verified Homeowner – Credential Documentation
+# Home Credential – Credential Governance
 
 ## 1. About this Document
 
-This document describes the **Verified Homeowner** verifiable credential to help potential verifiers determine whether it is suitable for their needs. The intended audience includes real estate professionals, lenders, insurers, municipalities, and financial service providers.
+This document describes the **Home Credential** (also referred to as "Verified Homeowner") verifiable credential to help potential verifiers determine whether it is suitable for their needs. The intended audience includes real estate professionals, lenders, insurers, municipalities, and financial service providers.
 
-The Verified Homeowner Credential is issued by **Cornerstone Platform Inc.**, to Canadian Homeowners, and represents authoritative proof of homeownership derived from the provincial land title registry, combined with high-assurance identity verification sources.
+The Home Credential is issued by the **Cornerstone Network** to Canadian homeowners and represents authoritative proof of homeownership derived from the provincial land title registry, combined with high-assurance identity verification sources.
 
 ### 1.1 Version History
 
 | Ver.      | Date        | Notes                               | Author(s) |
 |-----------|-------------|-------------------------------------|-------------|
-| **0.3**   | 29-Sep-2025  | Updated credential schema information based on available attributes from Landcor             | Mathieu Glaude    |
-| **0.2**   | 3-Sep-2025  | Simplified and reformatted document                       | Mathieu Glaude    |
-| **0.1**   | 20-Aug-2025  | Initial draft                       | Mathieu Glaude    |
+| **1.0**   | 26-Feb-2026 | JSON-LD format finalization; replaced identity attributes with `cornerstone_id` reference for atomicity; removed `effective_year`; updated schema hosting; added design rationale and industry references | Mathieu Glaude |
+| **0.3**   | 29-Sep-2025 | Updated credential schema information based on available attributes from Landcor | Mathieu Glaude |
+| **0.2**   | 3-Sep-2025  | Simplified and reformatted document  | Mathieu Glaude |
+| **0.1**   | 20-Aug-2025 | Initial draft                        | Mathieu Glaude |
 
 ## 2. Credential Overview
 
-The Verified Homeowner Credential is a verifiable credential (VC) issued to individuals who are confirmed as registered property owners in the provincial land-title registry. It enables the holder to prove both their identity and their ownership of a property while sharing only the minimum data required.
-
-**External terminology note**: This credential is referred to as "Verified Homeowner" or "Home Credential" in technical specifications, and corresponds to the "Home Ownership VC" or "HomeCredential" referenced in the Cornerstone Identity, Persona, and Access Model.
+The Home Credential is a verifiable credential (VC) issued to individuals who are confirmed as registered property owners in the provincial land-title registry. It enables the holder to prove property ownership while sharing only the minimum data required.
 
 Each issuance is backed by **FINTRAC-compliant dual-process checks**:
 - Interac Bank Verification or BC Person Credential, and
 - Land Title name-and-address match.
 
+The credential references the holder's **Cornerstone ID** for identity binding, rather than duplicating identity claims. This follows the atomicity principle: each credential contains only the data it uniquely attests to.
+
 The credential is issued directly into the **Cornerstone Wallet** and can be consumed by relying parties without requiring them to re-run identity checks.
 
 |              |                                                                 |
 |--------------|-----------------------------------------------------------------|
-| **Credential:** | Verified Homeowner                                            |
-| **Schema:**     | Verified Homeowner v1.0                                       |
-| **Issuer:**     | Cornerstone Platform Inc. <br/> [https://cornerstone.ca](https://cornerstone.ca) |
-| **Issuer DID:** | TBA (e.g., `did:web:cornerstone.ca`)                          |
+| **Credential:** | Home Credential (Verified Homeowner)                       |
+| **Schema:**     | Home Credential v1.0                                       |
+| **Issuer:**     | Cornerstone Network                                        |
+| **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)  |
+| **Format:**     | W3C Verifiable Credentials (JSON-LD)                       |
 
-### 2.1 Prerequisite Credentials
+**Important**: This credential represents ownership of a **specific property**. Homeowners who own multiple properties receive **separate Home Credentials for each property** — one credential per property owned. Each property has its own property-specific trust network.
 
-**Required Before Issuance:**
-- **Cornerstone ID** (base identity credential) - ALL users must hold this first
+### 2.1 Attribute Summary (10 Attributes)
 
-**Credential Hierarchy:**
-```
-Cornerstone ID (foundation)
-└── Home Credential (Verified Homeowner) - THIS CREDENTIAL
-    └── Property Access Authorization Credential (PAAC) - can be issued by homeowner to trust network members
-```
+| **#** | **Name**            | **Attribute**          | **Data Type**       | **Required** | **Notes** |
+|-------|---------------------|------------------------|---------------------|--------------|-----------|
+| 001   | Cornerstone ID Reference | `cornerstone_id` | DID/URI             | Yes          | Reference to holder's Cornerstone ID. |
+| 002   | PID                 | `pid`                  | String              | Yes          | Provincial land title registry identifier. |
+| 003   | Property Address    | `property_address`     | JSON object         | Yes          | Standardized postal address (street_address, locality, region, postal_code, country). |
+| 004   | Jurisdiction        | `jurisdiction`         | String              | Yes          | Province of registration (e.g., BC, ON). |
+| 005   | Purchase Price      | `purchase_price`       | Number              | Yes          | From Landcor / land title sales history. |
+| 006   | Purchase Date       | `purchase_date`        | String (YYYY-MM-DD) | Yes          | ISO 8601 date. |
+| 007   | Year Built          | `year_built`           | Integer             | Yes          | From Landcor / property details. |
+| 008   | Neighbourhood       | `neighbourhood`        | String              | Yes          | From Landcor / property details. |
+| 009   | Identity Evidence   | `identity_evidence`    | String / URI        | Yes          | Reference to identity verification record. |
+| 010   | Title Evidence      | `title_evidence`       | String / URI        | Yes          | Reference to land title verification record. |
 
-**Important**: This credential represents ownership of a **specific property**. Homeowners who own multiple properties receive **separate Home Credentials for each property**—one credential per property owned. Each property has its own property-specific trust network.
+### 2.2 Design Rationale
 
-### 2.2 Attribute Summary
+**Attribute decisions in this version:**
 
-| **#**       | **Name**          | **Attribute**        | **Data Type** | **Notes** |
-|-------------|-------------------|----------------------|---------------|-----------|
-| 001         | Given Names       | `given_names`        | String        | Legal given names. |
-| 002         | Family Name       | `family_name`        | String        | Legal family/surname. |
-| 003         | Date of Birth     | `birthdate_dateint`  | Integer       | `YYYYMMDD` for ZK proofs. |
-| 004         | Verified Email    | `verified_email`     | String        | Verified via OTP or equivalent. |
-| 005         | PID               | `pid`                | String        | Unique Parcel Identifier; essential anchor for linking data across systems and avoiding redundant searches. |
-| 006         | Property Address  | `property_address`   | JSON object   | Standardized postal address; needed for quoting, underwriting, and service delivery. |
-| 007         | Jurisdiction      | `jurisdiction`       | String        | Municipality name; required in most regulatory and financial processes. |
-| 008         | Purchase Price    | `purchase_price`     | Number        | Historical sale price; useful for fraud checks, appraisals, and loan risk. |
-| 009         | Purchase Date     | `purchase_date`      | Date          | Date of last sale; helps validate ownership timeline and market behaviour. |
-| 010         | Year Built        | `year_built`         | Integer       | Core input for replacement cost models; older homes often higher risk. |
-| 011         | Effective Year    | `effective_year`     | Integer       | Renovation-adjusted year; captures material updates that affect insurability. |
-| 012         | Neighbourhood     | `neighbourhood`      | String        | Recognized community name; key for market value and comparables. |
-| 013         | Identity Evidence | `identity_evidence`  | String / URI  | UUID + source of IDV evidence. |
-| 014         | Title Evidence    | `title_evidence`     | String / URI  | UUID + source of title evidence. |
+- **Replaced 4 identity attributes with `cornerstone_id` reference.** Previously, the Home Credential contained `given_names`, `family_name`, `birthdate_dateint`, and `verified_email` — all duplicated from the Cornerstone ID. These have been replaced with a single `cornerstone_id` reference. This follows the atomicity principle: each credential contains only the data it uniquely attests to. The Professional and Accreditation credentials already use this reference pattern. When a verifier needs both identity and property data, they request both credentials.
 
+- **Removed `effective_year`.** This was a BC-specific assessment concept (renovation-adjusted year) with limited value for verifiers outside British Columbia. Not needed for v1.
+
+- **`purchase_price` and `purchase_date` retained in the credential.** These are intentionally included as verified data from land title registry records captured at issuance time. They represent facts about the property transaction that are useful for fraud checks, appraisals, and loan risk assessment.
+
+**Industry references:**
+
+- **vLEI (GLEIF)**: Uses a chained credential model where credentials reference parent credentials via "edges" rather than duplicating attributes. The Home Credential follows this same principle — the `cornerstone_id` reference creates the chain while keeping each credential atomic.
+
+### 2.3 Removed Attributes (v1.0)
+
+| Attribute | Reason for Removal |
+|-----------|-------------------|
+| `given_names` (String) | Replaced by `cornerstone_id` reference. Identity data lives in the Cornerstone ID; duplicating it violates the atomicity principle. |
+| `family_name` (String) | Replaced by `cornerstone_id` reference. |
+| `birthdate_dateint` (Integer) | Replaced by `cornerstone_id` reference. Also, integer format was AnonCreds-specific. |
+| `verified_email` (String) | Replaced by `cornerstone_id` reference. |
+| `effective_year` (Integer) | BC-specific assessment concept with limited value for v1 verifiers. |
 
 ## 3. Credential Details
 
 ### 3.1 Issuer
 
-The Verified Homeowner Credential is issued by **Cornerstone Platform Inc.**, acting as the credential authority. Each credential is issued only after both identity and title checks are successfully completed.
+The Home Credential is issued by the **Cornerstone Network**, acting as the credential authority. Each credential is issued only after both identity and title checks are successfully completed.
 
 ### 3.2 Schema and Credential Definition Governance
 
-The Verified Homeowner Credential schema and definition are managed by Cornerstone and registered on the **Cornerstone Network Trust Registry**. Updates follow a change-managed governance process to ensure interoperability.
+The Home Credential schema and definition are managed by the Cornerstone Network and registered on the **Cornerstone Trust Registry**. Updates follow a change-managed governance process to ensure interoperability.
 
 ### 3.3 Issuer Data Source
 
 The data comes from two authoritative categories:
 
-- **Identity Verification**: Interac Bank Verification Service, or BC Person Credential.  
-- **Title Verification**: Provincial land-title registry records, including property identifier, civic address, ownership type, and percentage.  
+- **Identity Verification**: Interac Bank Verification Service, or BC Person Credential.
+- **Title Verification**: Provincial land-title registry records (via Landcor), including property identifier, civic address, ownership type, and percentage.
 
-Together these bind a person’s identity to their legal property ownership.
+Together these bind a person's verified identity (via Cornerstone ID) to their legal property ownership.
 
 #### 3.3.1 Data Updates
-- A credential reflects the state of records at issuance.  
-- Ownership or identity changes require revocation and re-issuance.  
-- Evidence is retained for five years in compliance with FINTRAC.  
+- A credential reflects the state of records at issuance.
+- Ownership or identity changes require revocation and re-issuance.
+- Evidence is retained for five years in compliance with FINTRAC.
 
 ### 3.4 Assurance
 
-The credential combines three assurance anchors:
-- High-assurance identity (Person Credential or Interac IVS),  
-- Land-title registry record (ownership).  
+The credential combines two assurance anchors:
+- High-assurance identity (via Cornerstone ID, verified through Interac or BC Person Credential)
+- Land-title registry record (ownership)
 
-This meets FINTRAC’s dual-process method.
+This meets FINTRAC's dual-process method.
 
-### 3.5 Revocation
+### 3.5 Credential Status
 
-A Verified Homeowner Credential will be revoked in cases such as:
+Credential status is managed via the **W3C Bitstring Status List v1.1**, supporting both `revocation` (permanent) and `suspension` (reversible) purposes.
+
+### 3.6 Revocation
+
+A Home Credential will be revoked in cases such as:
 1. Property sold or ownership updated
-2. Cornerstone ID (prerequisite) is revoked or expired
+2. Cornerstone ID (referenced credential) is revoked or expired
 3. Identity evidence expires
 4. Fraud or errors detected
 5. Holder requests re-issuance
 6. Regulatory or legal request
 
-**Cascade Revocation**: If the Home Credential is revoked, ALL Property Access Authorization Credentials (PAACs) for that specific property MUST be automatically revoked:
-- **Property Access Authorization Credentials (PAACs) for this property** → Automatically revoked
-- This affects all trust network members who were granted access to this property
-- Other properties owned by the same homeowner are unaffected (each property has its own Home Credential)
-
-**If Cornerstone ID is revoked**: The Home Credential is automatically revoked (prerequisite dependency cascade from Cornerstone ID).
+**Cascade Revocation**: When a Home Credential is revoked, all PAACs for that specific property should be revoked. This is managed operationally by the Cornerstone Network platform. Other properties owned by the same homeowner are unaffected (each property has its own Home Credential).
 
 Re-issuance involves re-verification and issuance of a new credential to the holder's Cornerstone Wallet.
 
@@ -122,68 +130,36 @@ Re-issuance involves re-verification and issuance of a new credential to the hol
 
 ### 4.1 Credential Schema
 
-The Verified Homeowner Credential conforms to W3C Verifiable Credentials and uses a Cornerstone-managed schema:
-
-- **Schema ID (URI):** `https://schema.cornerstoneplatform.ca/v1/homeowner.json`  
-- **Schema Versioning:** Breaking changes produce a new schema and new capture_base digest.  
-- **Contexts:**  
-  - `https://www.w3.org/2018/credentials/v1`  
-  - `https://schema.cornerstoneplatform.ca/contexts/homeowner-v1.json`
+- **Schema ID (URI):** `https://trustinfrastructure.com/cornerstone/schemas/home-credential.json` *(exact URL TBD)*
+- **Schema Versioning:** Semantic versioning. Breaking changes produce a new major version.
+- **Contexts:**
+  - `https://www.w3.org/ns/credentials/v2`
+  - `https://trustinfrastructure.com/cornerstone/contexts/home-credential-v1.json` *(exact URL TBD)*
 
 ### 4.2 Subject of the Credential
 
 The subject is the **individual holder**, bound to a **specific property** at issuance. Binding is confirmed by:
-- High-assurance ID verification, and  
-- Land-title registry name/address match.  
+- Reference to verified Cornerstone ID (via `cornerstone_id`)
+- Land-title registry name/address match
 
 ### 4.3 Attributes
 
-#### 4.3.1 Identity Attributes
+#### 4.3.1 Identity Reference
 
-*Given Names (001)*
-
-<table>
-  <tr><th>Attribute</th><td><code>given_names</code></td></tr>
-  <tr><th>Description</th><td>Legal given names.</td></tr>
-  <tr><th>Source</th><td>Interac or BC Person Credential.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
-  <tr><th>Examples</th><td><code>John Michael</code></td></tr>
-</table>
-
-*Family Name (002)*
+*Cornerstone ID Reference (001)*
 
 <table>
-  <tr><th>Attribute</th><td><code>family_name</code></td></tr>
-  <tr><th>Description</th><td>Legal surname.</td></tr>
-  <tr><th>Source</th><td>Interac or BC Person Credential.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
-  <tr><th>Examples</th><td><code>Smith</code></td></tr>
+  <tr><th>Attribute</th><td><code>cornerstone_id</code></td></tr>
+  <tr><th>Description</th><td>Reference to the holder's verified Cornerstone ID credential. Replaces previously duplicated identity attributes.</td></tr>
+  <tr><th>Source</th><td>Cornerstone ID issuance.</td></tr>
+  <tr><th>Data Type</th><td>DID/URI</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Design Note</th><td>Follows atomicity principle. Identity data lives in Cornerstone ID; this credential references it rather than duplicating it.</td></tr>
 </table>
-
-*Date of Birth (003)*
-
-<table>
-  <tr><th>Attribute</th><td><code>birthdate_dateint</code></td></tr>
-  <tr><th>Description</th><td>Date of birth in <code>YYYYMMDD</code> format, compatible with ZK proofs.</td></tr>
-  <tr><th>Source</th><td>Interac or BC Person Credential.</td></tr>
-  <tr><th>Data Type</th><td>Integer</td></tr>
-  <tr><th>Examples</th><td><code>19850621</code></td></tr>
-</table>
-
-*Verified Email (004)*
-
-<table>
-  <tr><th>Attribute</th><td><code>verified_email</code></td></tr>
-  <tr><th>Description</th><td>Email verified during Cornerstone onboarding process.</td></tr>
-  <tr><th>Source</th><td>Cornerstone Onboarding Flow.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
-  <tr><th>Examples</th><td><code>john.smith@sutton.com</code></td></tr>
-</table>
-
 
 #### 4.3.2 Property & Ownership Attributes
 
-*PID (005)*
+*PID (002)*
 
 <table>
   <tr><th>Attribute</th><td><code>pid</code></td></tr>
@@ -191,49 +167,54 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Source</th><td>Provincial Land Title Registry / Landcor feed.</td></tr>
   <tr><th>Data Type</th><td>String</td></tr>
   <tr><th>Examples</th><td><code>027-263-975</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Property Address (006)*
+*Property Address (003)*
 
 <table>
   <tr><th>Attribute</th><td><code>property_address</code></td></tr>
   <tr><th>Description</th><td>Standardized postal address including street, locality, region, and postal code.</td></tr>
-  <tr><th>Source</th><td>Landcor “Full Property Address”.</td></tr>
-  <tr><th>Data Type</th><td>JSON object</td></tr>
-  <tr><th>Examples</th><td><code>1234 W 10TH AVE, Vancouver, BC V6H 1J9</code></td></tr>
+  <tr><th>Source</th><td>Landcor "Full Property Address".</td></tr>
+  <tr><th>Data Type</th><td>JSON object containing: <code>street_address</code>, <code>locality</code>, <code>region</code>, <code>postal_code</code>, <code>country</code></td></tr>
+  <tr><th>Examples</th><td><code>{"street_address": "1234 W 10th Ave", "locality": "Vancouver", "region": "BC", "postal_code": "V6H 1J9", "country": "CA"}</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Jurisdiction (007)*
+*Jurisdiction (004)*
 
 <table>
   <tr><th>Attribute</th><td><code>jurisdiction</code></td></tr>
-  <tr><th>Description</th><td>Municipality or local jurisdiction where the property is located.</td></tr>
+  <tr><th>Description</th><td>Province where the property is registered.</td></tr>
   <tr><th>Source</th><td>Landcor property details.</td></tr>
   <tr><th>Data Type</th><td>String</td></tr>
-  <tr><th>Examples</th><td><code>City of Vancouver</code></td></tr>
+  <tr><th>Examples</th><td><code>BC</code>, <code>ON</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Purchase Price (008)*
+*Purchase Price (005)*
 
 <table>
   <tr><th>Attribute</th><td><code>purchase_price</code></td></tr>
   <tr><th>Description</th><td>Last recorded sale price of the property.</td></tr>
-  <tr><th>Source</th><td>Landcor sales history feed (if available).</td></tr>
+  <tr><th>Source</th><td>Landcor sales history feed.</td></tr>
   <tr><th>Data Type</th><td>Number</td></tr>
-  <tr><th>Examples</th><td><code>1,250,000</code></td></tr>
+  <tr><th>Examples</th><td><code>1250000</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Purchase Date (009)*
+*Purchase Date (006)*
 
 <table>
   <tr><th>Attribute</th><td><code>purchase_date</code></td></tr>
   <tr><th>Description</th><td>Date of the last property sale transaction.</td></tr>
-  <tr><th>Source</th><td>Landcor sales history feed (if available).</td></tr>
-  <tr><th>Data Type</th><td>Date</td></tr>
+  <tr><th>Source</th><td>Landcor sales history feed.</td></tr>
+  <tr><th>Data Type</th><td>String (YYYY-MM-DD)</td></tr>
   <tr><th>Examples</th><td><code>2018-05-14</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Year Built (010)*
+*Year Built (007)*
 
 <table>
   <tr><th>Attribute</th><td><code>year_built</code></td></tr>
@@ -241,19 +222,10 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Source</th><td>Landcor property details.</td></tr>
   <tr><th>Data Type</th><td>Integer</td></tr>
   <tr><th>Examples</th><td><code>1987</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Effective Year (011)*
-
-<table>
-  <tr><th>Attribute</th><td><code>effective_year</code></td></tr>
-  <tr><th>Description</th><td>Renovation-adjusted year reflecting major updates that affect valuation and risk.</td></tr>
-  <tr><th>Source</th><td>Landcor property details.</td></tr>
-  <tr><th>Data Type</th><td>Integer</td></tr>
-  <tr><th>Examples</th><td><code>1993</code></td></tr>
-</table>
-
-*Neighbourhood (012)*
+*Neighbourhood (008)*
 
 <table>
   <tr><th>Attribute</th><td><code>neighbourhood</code></td></tr>
@@ -261,145 +233,210 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Source</th><td>Landcor property details.</td></tr>
   <tr><th>Data Type</th><td>String</td></tr>
   <tr><th>Examples</th><td><code>Kitsilano</code></td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
-
 
 #### 4.3.3 Evidence Attributes
 
-*Identity Evidence (013)*
+*Identity Evidence (009)*
 
 <table>
   <tr><th>Attribute</th><td><code>identity_evidence</code></td></tr>
   <tr><th>Description</th><td>UUID referencing IDV source(s), author, and date of verification.</td></tr>
   <tr><th>Source</th><td>Cornerstone IDV process.</td></tr>
   <tr><th>Data Type</th><td>String / URI</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Title Evidence (014)*
+*Title Evidence (010)*
 
 <table>
   <tr><th>Attribute</th><td><code>title_evidence</code></td></tr>
   <tr><th>Description</th><td>UUID referencing land title evidence, author, and verification date.</td></tr>
   <tr><th>Source</th><td>Land Title Registry checks.</td></tr>
   <tr><th>Data Type</th><td>String / URI</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-## 5. Implementations
+## 5. Issuance Rules
 
-### 5.1 Technical Format
+### 5.1 When Credential is Issued
 
-This credential uses the **W3C Verifiable Credentials Data Model** and the Verified Homeowner schema.
+The Home Credential is issued when:
+1. Holder possesses a valid Cornerstone ID
+2. Identity verification matches land title registry records (name, address)
+3. Title verification confirms property ownership via PID
+4. Holder has generated a DID in their Cornerstone Wallet
 
-### 5.2 Issuer List
+### 5.2 Credential Binding
 
-| Environment       | Issuer Name                | Issuer DID |
-|-------------------|----------------------------|------------|
-| Production        | Cornerstone Platform Inc.  | TBA        |
-| Test/Dev          | Cornerstone Platform Inc.  | TBA        |
+The credential is bound to:
+- A DID generated by the user's wallet (stored in `credentialSubject.id`)
+- A specific property (via `pid` and `property_address`)
+- The holder's Cornerstone ID (via `cornerstone_id` reference)
 
-### 5.3 Schema Implementation
+## 6. Refresh & Expiration
 
-| Environment   | Ledger/Registry | Schema ID |
-|---------------|-----------------|-----------|
-| Production    | Cornerstone Trust Registry | TBA |
-| Test/Dev      | Cornerstone Trust Registry | `cornerstone:2:verified-homeowner:1.0` |
+### 6.1 Expiration Period
 
-### 5.4 Credential Implementation
+Expiration period is determined by operational policy.
 
-| Environment   | Ledger/Registry | Credential Definition ID | OCA Bundle |
-|---------------|-----------------|--------------------------|------------|
-| Production    | TBA             | TBA                      | TBA        |
-| Test/Dev      | Cornerstone Trust Registry | `cornerstone:3:CL:12345:verified-homeowner` | [Verified Homeowner OCA Bundle](https://github.com/cornerstone/oca-bundles/tree/main/verified-homeowner) |
+### 6.2 Refresh Triggers
 
-## 6. Policy Integration
+- Expiration date approaches
+- Property ownership changes
+- Identity information changes
+- Holder requests refresh
 
-### 6.1 Capabilities Enabled by This Credential
+### 6.3 Refresh Process
 
-The Verified Homeowner Credential enables holders to access property-specific features and grant access to their trust network. Applications use credential-based access control to provision these capabilities:
+Refresh requires revocation of previous credential and issuance of new credential with updated data.
 
-1. **Property Trust Network Management**:
-   - Issue Property Access Authorization Credentials (PAACs) to advisors and service providers
-   - Manage trust network membership for the specific property
-   - Grant data access permissions (identity, ownership, equity, insurance)
-   - Define access levels (read-only, operational, advisory, transactional)
-   - Revoke PAACs when relationships end
+## 7. Revocation Policy
 
-2. **Property Data Sharing**:
-   - Share verified property ownership with lenders, insurers, and financial institutions
-   - Provide property details for underwriting, quoting, and service delivery
-   - Enable property data portability across platforms and service providers
-   - Selectively disclose property attributes using zero-knowledge proofs
+### 7.1 Revocation Triggers
 
-3. **Homeowner Platform Access**:
-   - Access homeowner-specific features in Cornerstone applications
-   - Create and manage property portfolios (requires Portfolio Issuer capability)
-   - Receive property-specific notifications and updates
-   - Participate in property-specific communications
+1. Property sold or ownership updated
+2. Cornerstone ID revoked or expired
+3. Identity or title evidence expires
+4. Fraud or errors detected
+5. Holder requests re-issuance
+6. Regulatory or legal request
 
-### 6.2 Example Policy Rules
+### 7.2 Cascade Revocation
 
-Platform applications implement access control rules based on credential presentation:
-
-1. **Trust Network Authorization Policy**:
-   ```
-   IF holder presents:
-      - Valid Home Credential for property X
-   THEN authorize: Issue PAAC for property X, manage trust network for property X
-   ```
-
-2. **Property Data Access Policy**:
-   ```
-   IF holder presents:
-      - Valid Home Credential
-   THEN authorize: View property details, share property data, update property information
-   ```
-
-3. **Service Integration Policy**:
-   ```
-   IF homeowner presents:
-      - Valid Home Credential with attributes: [pid, property_address, year_built]
-   AND service provider presents:
-      - Valid PAAC for this property with scope: [property_data]
-   THEN authorize: Service provider access to shared property attributes
-   ```
-
-## 7. Related Credentials
-
-### 7.1 Prerequisite Credentials
-
-This credential REQUIRES:
-- **Cornerstone ID** (foundation identity credential)
-  - Must be valid and not revoked
-  - If revoked, this credential is automatically revoked
-
-### 7.2 Dependent Credentials
-
-This credential enables issuance of:
-- **Property Access Authorization Credential (PAAC)**: Issued BY the homeowner TO advisors/service providers for this specific property
-  - Grants trust network members access to property-specific data
-  - Scoped to the specific property represented by this Home Credential
-  - Automatically revoked if this Home Credential is revoked
-
-### 7.3 Credential Hierarchy
-
-```
-Cornerstone ID (foundation)
-└── Home Credential (Verified Homeowner) - THIS CREDENTIAL
-    └── Property Access Authorization Credential (PAAC)
-        - Issued by homeowner to trust network members
-        - One property-specific trust network per Home Credential
-        - Automatically revoked when Home Credential is revoked
-```
-
-**Important**: Each property has its own trust network. A homeowner with multiple properties holds multiple Home Credentials (one per property), and each Home Credential can issue its own set of PAACs for that property's trust network.
-
-### 7.4 Cascade Revocation Summary
-
-**When this credential is revoked:**
-- ALL PAACs for this specific property → Automatically revoked
-- All trust network members for this property lose access
+When a Home Credential is revoked:
+- All PAACs for that specific property are revoked (managed operationally by the platform)
 - Other properties owned by the same homeowner are unaffected
 
-**When prerequisite credentials are revoked:**
-- If Cornerstone ID is revoked → This Home Credential is automatically revoked (which then triggers PAAC revocation)
+### 7.3 Revocation Method
 
+Credential status managed via **W3C Bitstring Status List v1.1** with both revocation and suspension bitstrings.
+
+## 8. Validation Rules
+
+### 8.1 Required Fields
+
+**credentialSubject:**
+- `cornerstone_id`
+- `pid`
+- `property_address`
+- `jurisdiction`
+- `purchase_price`
+- `purchase_date`
+- `year_built`
+- `neighbourhood`
+- `identity_evidence`
+- `title_evidence`
+
+**Envelope:**
+- `issuer` (must be Cornerstone Network DID)
+- `validFrom`
+- `validUntil`
+- `credentialSchema`
+- `credentialStatus`
+
+**Evidence:**
+- At least one `evidence` object
+
+## 9. Policy Integration
+
+### 9.1 Capabilities Granted
+
+1. **Property Trust Network Management**: Issue PAACs to advisors and service providers; manage trust network membership
+2. **Property Data Sharing**: Share verified property ownership with lenders, insurers, financial institutions
+3. **Homeowner Platform Access**: Access homeowner-specific features in Cornerstone applications
+
+### 9.2 Related Credentials
+
+- **References**: Cornerstone ID (via `cornerstone_id`)
+- **Referenced by**: PAAC (via `property_id` and `pid`)
+
+## 10. Schema Definition (High-Level)
+
+```json
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://trustinfrastructure.com/cornerstone/contexts/home-credential-v1.json"
+  ],
+  "type": ["VerifiableCredential", "HomeCredential"],
+  "issuer": "did:web:trustinfrastructure.com:cornerstone",
+  "validFrom": "2026-01-15T14:32:00Z",
+  "validUntil": "2031-01-15T14:32:00Z",
+  "credentialSubject": {
+    "id": "did:example:user123",
+    "cornerstone_id": "did:example:user123",
+    "pid": "027-263-975",
+    "property_address": {
+      "street_address": "1234 W 10th Ave",
+      "locality": "Vancouver",
+      "region": "BC",
+      "postal_code": "V6H 1J9",
+      "country": "CA"
+    },
+    "jurisdiction": "BC",
+    "purchase_price": 1250000,
+    "purchase_date": "2018-05-14",
+    "year_built": 1987,
+    "neighbourhood": "Kitsilano",
+    "identity_evidence": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "title_evidence": "urn:uuid:b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  },
+  "credentialStatus": [
+    {
+      "id": "https://trustinfrastructure.com/cornerstone/status/revocation#23456",
+      "type": "BitstringStatusListEntry",
+      "statusPurpose": "revocation",
+      "statusListIndex": "23456",
+      "statusListCredential": "https://trustinfrastructure.com/cornerstone/status/revocation"
+    },
+    {
+      "id": "https://trustinfrastructure.com/cornerstone/status/suspension#23456",
+      "type": "BitstringStatusListEntry",
+      "statusPurpose": "suspension",
+      "statusListIndex": "23456",
+      "statusListCredential": "https://trustinfrastructure.com/cornerstone/status/suspension"
+    }
+  ],
+  "evidence": [
+    {
+      "type": "IdentityProofing",
+      "method": "InteracBankVerification",
+      "verificationDate": "2026-01-15T14:32:00Z",
+      "matchFields": ["given_name", "family_name", "birthdate"],
+      "recordLocator": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "verifier": "Interac Corp."
+    },
+    {
+      "type": "TitleVerification",
+      "method": "LandTitleRegistryCheck",
+      "verificationDate": "2026-01-15T14:35:00Z",
+      "matchFields": ["pid", "owner_name", "property_address"],
+      "recordLocator": "urn:uuid:b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "verifier": "Cornerstone Network"
+    }
+  ],
+  "credentialSchema": {
+    "id": "https://trustinfrastructure.com/cornerstone/schemas/home-credential.json",
+    "type": "JsonSchema"
+  }
+}
+```
+
+## 11. References
+
+### 11.1 Industry References
+
+- **vLEI (GLEIF)** — Chained credential model where credentials reference parent credentials rather than duplicating attributes. [gleif.org/vlei](https://www.gleif.org/en/organizational-identity/introducing-the-verifiable-lei-vlei)
+- **W3C Verifiable Credentials Data Model 2.0** — [w3.org/TR/vc-data-model-2.0](https://www.w3.org/TR/vc-data-model-2.0/)
+- **W3C Bitstring Status List v1.1** — [w3c.github.io/vc-bitstring-status-list](https://w3c.github.io/vc-bitstring-status-list/)
+
+---
+
+**Document Control**
+
+- **Owner**: Cornerstone Network
+- **Governance Body**: Cornerstone Network
+- **Review Cycle**: Annual or upon breaking schema changes
+- **Schema Registry**: `https://trustinfrastructure.com/cornerstone/schemas/` *(exact URL TBD)*
