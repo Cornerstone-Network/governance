@@ -39,7 +39,7 @@ The credential is issued directly into the **Cornerstone Wallet**.
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
 
-### 2.1 Attribute Summary (8 Attributes)
+### 2.1 Attribute Summary (7 Attributes)
 
 | **#** | **Name**            | **Attribute**               | **Data Type**       | **Required** | **Notes** |
 |-------|---------------------|-----------------------------|---------------------|--------------|-----------|
@@ -49,8 +49,7 @@ The credential is issued directly into the **Cornerstone Wallet**.
 | 004   | Network Partner Name | `network_partner_name`     | String              | Yes          | Human-readable NP name (e.g., "Sutton Group"). |
 | 005   | Granted Date        | `granted_date`              | String (ISO 8601)   | Yes          | When capability was granted. |
 | 006   | Granting Authority  | `granting_authority`        | String              | Yes          | NP name or "Cornerstone Network". |
-| 007   | Portfolio Issuer Evidence | `portfolio_issuer_evidence` | String / URI    | Yes          | Reference to attestation evidence. |
-| 008   | Scope               | `scope`                     | JSON object         | No           | Geographic or organizational restrictions. |
+| 007   | Scope               | `scope`                     | JSON object         | No           | Geographic or organizational restrictions. |
 
 ### 2.2 Design Rationale
 
@@ -63,6 +62,8 @@ The credential is issued directly into the **Cornerstone Wallet**.
 - **Removed `issuer_type`** (ORGANIZATIONAL vs DELEGATE). Single type for the initial release to keep it simple. If the distinction becomes important in the future, it should be modeled as separate credential types (following the vLEI pattern of OOR vs ECR) rather than a type field within a single credential.
 
 - **Added `cornerstone_id` reference**. For consistency with all other credentials. Every non-foundation credential references the holder's Cornerstone ID.
+
+- **Removed `portfolio_issuer_evidence`**. Evidence is captured in the credential envelope's `evidence` array, not as a `credentialSubject` attribute. This is consistent with the W3C VC Data Model pattern where evidence about the issuance process belongs in the envelope, not the subject.
 
 - **Renamed `npId` → `network_partner_id` and `np_name` → `network_partner_name`**. For naming consistency across the credential ecosystem.
 
@@ -77,6 +78,7 @@ The credential is issued directly into the **Cornerstone Wallet**.
 | `canIssuePortfolios` (Boolean, always `true`) | Redundant. The credential's existence is the authorization. A capability credential that always has a capability flag set to `true` adds no information. |
 | `professional_credential_ref` (String UUID) | No hard dependency between credentials. Portfolio Issuer is independent. Business-level assumption that portfolio issuers are professionals, not credential-level enforcement. |
 | `issuer_type` (String enum: ORGANIZATIONAL/DELEGATE) | Single type for the initial release. Future distinction should use separate credential types per vLEI pattern, not an attribute within one credential. |
+| `portfolio_issuer_evidence` (String/URI) | Evidence is captured in the credential envelope's `evidence` array per W3C VC Data Model, not as a `credentialSubject` attribute. |
 
 ## 3. Credential Details
 
@@ -176,18 +178,9 @@ A Portfolio Issuer Credential will be revoked in cases such as:
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Portfolio Issuer Evidence (007)*
-
-<table>
-  <tr><th>Attribute</th><td><code>portfolio_issuer_evidence</code></td></tr>
-  <tr><th>Description</th><td>UUID referencing Network Partner attestation source(s) and authorization date.</td></tr>
-  <tr><th>Data Type</th><td>String (UUID) or URI</td></tr>
-  <tr><th>Required</th><td>Yes</td></tr>
-</table>
-
 #### 4.2.2 Optional Attributes
 
-*Scope (008)*
+*Scope (007)*
 
 <table>
   <tr><th>Attribute</th><td><code>scope</code></td></tr>
@@ -206,7 +199,7 @@ A Portfolio Issuer Credential will be revoked in cases such as:
 ## 6. Validation Rules
 
 **Required credentialSubject fields:**
-- `cornerstone_id`, `portfolio_issuer_id`, `network_partner_id`, `network_partner_name`, `granted_date`, `granting_authority`, `portfolio_issuer_evidence`
+- `cornerstone_id`, `portfolio_issuer_id`, `network_partner_id`, `network_partner_name`, `granted_date`, `granting_authority`
 
 ## 7. Policy Integration
 
@@ -243,7 +236,6 @@ A Portfolio Issuer Credential will be revoked in cases such as:
     "network_partner_name": "Sutton Group",
     "granted_date": "2026-03-15T10:30:00Z",
     "granting_authority": "Sutton Group",
-    "portfolio_issuer_evidence": "urn:uuid:c3d4e5f6-a7b8-9012-cdef-123456789012",
     "scope": {
       "regions": ["British Columbia", "Ontario"],
       "offices": ["Vancouver Downtown", "Toronto Midtown"]

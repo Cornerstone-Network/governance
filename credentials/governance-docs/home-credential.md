@@ -37,20 +37,18 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 
 **Important**: This credential represents ownership of a **specific property**. Homeowners who own multiple properties receive **separate Home Credentials for each property** — one credential per property owned. Each property has its own property-specific trust network.
 
-### 2.1 Attribute Summary (10 Attributes)
+### 2.1 Attribute Summary (8 Attributes)
 
 | **#** | **Name**            | **Attribute**          | **Data Type**       | **Required** | **Notes** |
 |-------|---------------------|------------------------|---------------------|--------------|-----------|
 | 001   | Cornerstone ID Reference | `cornerstone_id` | DID/URI             | Yes          | Reference to holder's Cornerstone ID. |
 | 002   | PID                 | `pid`                  | String              | Yes          | Provincial land title registry identifier. |
 | 003   | Property Address    | `property_address`     | JSON object         | Yes          | Standardized postal address (street_address, locality, region, postal_code, country). |
-| 004   | Jurisdiction        | `jurisdiction`         | String              | Yes          | Province of registration (e.g., BC, ON). |
-| 005   | Purchase Price      | `purchase_price`       | Number              | Yes          | From Landcor / land title sales history. |
-| 006   | Purchase Date       | `purchase_date`        | String (YYYY-MM-DD) | Yes          | ISO 8601 date. |
-| 007   | Year Built          | `year_built`           | Integer             | Yes          | From Landcor / property details. |
-| 008   | Neighbourhood       | `neighbourhood`        | String              | Yes          | From Landcor / property details. |
-| 009   | Identity Evidence   | `identity_evidence`    | String / URI        | Yes          | Reference to identity verification record. |
-| 010   | Title Evidence      | `title_evidence`       | String / URI        | Yes          | Reference to land title verification record. |
+| 004   | Purchase Price      | `purchase_price`       | Number              | Yes          | From Landcor / land title sales history. |
+| 005   | Purchase Date       | `purchase_date`        | String (YYYY-MM-DD) | Yes          | ISO 8601 date. |
+| 006   | Year Built          | `year_built`           | Integer             | Yes          | From Landcor / property details. |
+| 007   | Neighbourhood       | `neighbourhood`        | String              | Yes          | From Landcor / property details. |
+| 008   | Homeowner Evidence  | `homeowner_evidence`   | String / URI        | Yes          | Reference to homeownership verification record. |
 
 ### 2.2 Design Rationale
 
@@ -59,6 +57,10 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 - **Replaced 4 identity attributes with `cornerstone_id` reference.** Previously, the Home Credential contained `given_names`, `family_name`, `birthdate_dateint`, and `verified_email` — all duplicated from the Cornerstone ID. These have been replaced with a single `cornerstone_id` reference. This follows the atomicity principle: each credential contains only the data it uniquely attests to. The Professional and Accreditation credentials already use this reference pattern. When a verifier needs both identity and property data, they request both credentials.
 
 - **Removed `effective_year`.** This was a BC-specific assessment concept (renovation-adjusted year) with limited value for verifiers outside British Columbia. Not needed for the initial release.
+
+- **Removed `jurisdiction`.** The province/jurisdiction is already contained within the `property_address` JSON object (the `region` field). Including it as a separate attribute is redundant.
+
+- **Consolidated two evidence fields into single `homeowner_evidence`.** Previously had separate `identity_evidence` and `title_evidence` fields. For the initial release, homeownership evidence primarily comes from the real estate professional making the claim that specific homeowners are the owners. As the system matures and integrates directly with title registries, the evidence source will evolve. A single evidence reference is sufficient to link to the verification record.
 
 - **`purchase_price` and `purchase_date` retained in the credential.** These are intentionally included as verified data from land title registry records captured at issuance time. They represent facts about the property transaction that are useful for fraud checks, appraisals, and loan risk assessment.
 
@@ -75,6 +77,9 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 | `birthdate_dateint` (Integer) | Replaced by `cornerstone_id` reference. Also, integer format was AnonCreds-specific. |
 | `verified_email` (String) | Replaced by `cornerstone_id` reference. |
 | `effective_year` (Integer) | BC-specific assessment concept with limited value for initial release verifiers. |
+| `jurisdiction` (String) | Redundant — province/jurisdiction is already contained in the `property_address.region` field. |
+| `identity_evidence` (String/URI) | Consolidated into single `homeowner_evidence` field. For the initial release, homeownership verification comes primarily from professional attestation. |
+| `title_evidence` (String/URI) | Consolidated into single `homeowner_evidence` field. |
 
 ## 3. Credential Details
 
@@ -117,7 +122,7 @@ Credential status is managed via the **W3C Bitstring Status List v1.1**, support
 A Home Credential will be revoked in cases such as:
 1. Property sold or ownership updated
 2. Cornerstone ID (referenced credential) is revoked or expired
-3. Identity evidence expires
+3. Evidence expires or is invalidated
 4. Fraud or errors detected
 5. Holder requests re-issuance
 6. Regulatory or legal request
@@ -181,18 +186,7 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Jurisdiction (004)*
-
-<table>
-  <tr><th>Attribute</th><td><code>jurisdiction</code></td></tr>
-  <tr><th>Description</th><td>Province where the property is registered.</td></tr>
-  <tr><th>Source</th><td>Landcor property details.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
-  <tr><th>Examples</th><td><code>BC</code>, <code>ON</code></td></tr>
-  <tr><th>Required</th><td>Yes</td></tr>
-</table>
-
-*Purchase Price (005)*
+*Purchase Price (004)*
 
 <table>
   <tr><th>Attribute</th><td><code>purchase_price</code></td></tr>
@@ -203,7 +197,7 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Purchase Date (006)*
+*Purchase Date (005)*
 
 <table>
   <tr><th>Attribute</th><td><code>purchase_date</code></td></tr>
@@ -214,7 +208,7 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Year Built (007)*
+*Year Built (006)*
 
 <table>
   <tr><th>Attribute</th><td><code>year_built</code></td></tr>
@@ -225,7 +219,7 @@ The subject is the **individual holder**, bound to a **specific property** at is
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Neighbourhood (008)*
+*Neighbourhood (007)*
 
 <table>
   <tr><th>Attribute</th><td><code>neighbourhood</code></td></tr>
@@ -238,22 +232,12 @@ The subject is the **individual holder**, bound to a **specific property** at is
 
 #### 4.3.3 Evidence Attributes
 
-*Identity Evidence (009)*
+*Homeowner Evidence (008)*
 
 <table>
-  <tr><th>Attribute</th><td><code>identity_evidence</code></td></tr>
-  <tr><th>Description</th><td>UUID referencing IDV source(s), author, and date of verification.</td></tr>
-  <tr><th>Source</th><td>Cornerstone IDV process.</td></tr>
-  <tr><th>Data Type</th><td>String / URI</td></tr>
-  <tr><th>Required</th><td>Yes</td></tr>
-</table>
-
-*Title Evidence (010)*
-
-<table>
-  <tr><th>Attribute</th><td><code>title_evidence</code></td></tr>
-  <tr><th>Description</th><td>UUID referencing land title evidence, author, and verification date.</td></tr>
-  <tr><th>Source</th><td>Land Title Registry checks.</td></tr>
+  <tr><th>Attribute</th><td><code>homeowner_evidence</code></td></tr>
+  <tr><th>Description</th><td>UUID referencing the homeownership verification record. For the initial release, this primarily comes from the real estate professional attesting to the homeowner's ownership. As the system integrates with title registries, the evidence source will evolve.</td></tr>
+  <tr><th>Source</th><td>Professional attestation / Cornerstone verification process.</td></tr>
   <tr><th>Data Type</th><td>String / URI</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
@@ -298,7 +282,7 @@ Refresh requires revocation of previous credential and issuance of new credentia
 
 1. Property sold or ownership updated
 2. Cornerstone ID revoked or expired
-3. Identity or title evidence expires
+3. Evidence expires or is invalidated
 4. Fraud or errors detected
 5. Holder requests re-issuance
 6. Regulatory or legal request
@@ -321,13 +305,11 @@ Credential status managed via **W3C Bitstring Status List v1.1** with both revoc
 - `cornerstone_id`
 - `pid`
 - `property_address`
-- `jurisdiction`
 - `purchase_price`
 - `purchase_date`
 - `year_built`
 - `neighbourhood`
-- `identity_evidence`
-- `title_evidence`
+- `homeowner_evidence`
 
 **Envelope:**
 - `issuer` (must be Cornerstone Network DID)
@@ -350,7 +332,7 @@ Credential status managed via **W3C Bitstring Status List v1.1** with both revoc
 ### 9.2 Related Credentials
 
 - **References**: Cornerstone ID (via `cornerstone_id`)
-- **Referenced by**: PAAC (via `property_id` and `pid`)
+- **Referenced by**: PAAC (via `pid`)
 
 ## 10. Schema Definition (High-Level)
 
@@ -375,13 +357,11 @@ Credential status managed via **W3C Bitstring Status List v1.1** with both revoc
       "postal_code": "V6H 1J9",
       "country": "CA"
     },
-    "jurisdiction": "BC",
     "purchase_price": 1250000,
     "purchase_date": "2018-05-14",
     "year_built": 1987,
     "neighbourhood": "Kitsilano",
-    "identity_evidence": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "title_evidence": "urn:uuid:b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    "homeowner_evidence": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   },
   "credentialStatus": [
     {
@@ -401,19 +381,11 @@ Credential status managed via **W3C Bitstring Status List v1.1** with both revoc
   ],
   "evidence": [
     {
-      "type": "IdentityProofing",
-      "method": "InteracBankVerification",
+      "type": "HomeownershipVerification",
+      "method": "ProfessionalAttestation",
       "verificationDate": "2026-01-15T14:32:00Z",
-      "matchFields": ["given_name", "family_name", "birthdate"],
-      "recordLocator": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "verifier": "Interac Corp."
-    },
-    {
-      "type": "TitleVerification",
-      "method": "LandTitleRegistryCheck",
-      "verificationDate": "2026-01-15T14:35:00Z",
       "matchFields": ["pid", "owner_name", "property_address"],
-      "recordLocator": "urn:uuid:b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "recordLocator": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "verifier": "Cornerstone Network"
     }
   ],

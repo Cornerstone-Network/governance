@@ -35,33 +35,36 @@ The PAAC is a verifiable credential (VC) that grants selective access to propert
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
 
-### 2.1 Attribute Summary (15 Attributes)
+### 2.1 Attribute Summary (10 Attributes)
 
 | **#** | **Name**            | **Attribute**               | **Data Type**            | **Required** | **Notes** |
 |-------|---------------------|-----------------------------|--------------------------|--------------|-----------|
 | 001   | Authorization ID    | `authorization_id`          | String (UUID)            | Yes          | Platform-generated unique identifier. |
-| 002   | Homeowner ID        | `homeowner_id`              | String (UUID)            | Yes          | Links to issuer's Cornerstone ID. |
-| 003   | Homeowner DID       | `homeowner_did`             | String (DID)             | Yes          | From homeowner's Cornerstone Wallet. |
-| 004   | Trust Network Member ID | `tnm_id`               | String (UUID)            | Yes          | Links to recipient's Cornerstone ID. |
-| 005   | Trust Network Member DID | `tnm_did`              | String (DID)             | Yes          | From recipient's Cornerstone Wallet. |
-| 006   | Property ID         | `property_id`               | String (UUID)            | Yes          | Links to specific property/portfolio. |
-| 007   | PID                 | `pid`                       | String                   | Yes          | Provincial land title identifier for property resolution. |
-| 008   | Data Scope          | `data_scope`                | JSON array (enum strings)| Yes          | Data categories the recipient can access. |
-| 009   | Authorization Purpose | `authorization_purpose`   | String                   | Yes          | Intent of data sharing. |
-| 010   | Access Level        | `access_level`              | String (enum)            | Yes          | `READ_ONLY`, `OPERATIONAL`, `ADVISORY`, `TRANSACTIONAL`. |
-| 011   | Start Date          | `start_date`                | String (ISO 8601)        | Yes          | Authorization validity commencement. |
-| 012   | Expiration Date     | `expiration_date`           | String (ISO 8601) or null | No          | If omitted, valid until revoked. |
-| 013   | Granted Date        | `granted_date`              | String (ISO 8601)        | Yes          | Platform-generated at issuance. |
-| 014   | Authorization Evidence | `authorization_evidence` | String / URI             | Yes          | References homeowner action log. |
-| 015   | Relationship Category | `relationship_category`   | String (enum)            | Yes          | Category of TNM's relationship to homeowner. |
+| 002   | Homeowner ID        | `homeowner_id`              | String (DID/URI)         | Yes          | Cornerstone ID of the homeowner sharing their property. |
+| 003   | PID                 | `pid`                       | String                   | Yes          | Provincial land title identifier — serves as the property identifier. |
+| 004   | Data Scope          | `data_scope`                | JSON array (enum strings)| Yes          | Data categories the recipient can access. |
+| 005   | Authorization Purpose | `authorization_purpose`   | String                   | Yes          | Intent of data sharing. |
+| 006   | Access Level        | `access_level`              | String (enum)            | Yes          | `READ_ONLY`, `OPERATIONAL`, `ADVISORY`, `TRANSACTIONAL`. |
+| 007   | Start Date          | `start_date`                | String (ISO 8601)        | Yes          | Authorization validity commencement. |
+| 008   | Expiration Date     | `expiration_date`           | String (ISO 8601) or null | No          | If omitted, valid until revoked. |
+| 009   | Authorization Evidence | `authorization_evidence` | String / URI             | Yes          | References homeowner action log. |
+| 010   | Relationship Category | `relationship_category`   | String (enum)            | Yes          | Category of TNM's relationship to homeowner. |
 
 ### 2.2 Design Rationale
 
 **Attribute decisions in this version:**
 
-- **Replaced `property_address` (JSON object) with `pid` (String).** The full property address already lives in the Home Credential. The PAAC uses `property_id` (platform internal UUID) and `pid` (provincial land title registry identifier) to resolve the link to the property. This avoids triple-duplication of address data across Cornerstone ID (`postal_address`), Home Credential (`property_address`), and PAAC.
+- **Replaced `property_address` (JSON object) with `pid` (String).** The full property address already lives in the Home Credential. The PAAC uses `pid` (provincial land title registry identifier) to resolve the link to the property. This avoids triple-duplication of address data across Cornerstone ID (`postal_address`), Home Credential (`property_address`), and PAAC.
 
-- **Signing model: Cornerstone Network signs on behalf of homeowners.** For the initial release, homeowner onboarding happens through professionals, and PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform flow and recorded in the `authorization_evidence` reference. The `homeowner_id` and `homeowner_did` identify the authorizing homeowner. Granular homeowner controls for modifying/revoking PAACs are planned for a future release.
+- **`homeowner_id` repurposed as Cornerstone ID reference.** Previously was a platform UUID; now references the homeowner's Cornerstone ID (DID/URI). This identifies the person sharing their property and is consistent with how other credentials reference identity.
+
+- **Removed `homeowner_did`, `tnm_id`, `tnm_did`.** DIDs are resolved at the credential envelope level (`credentialSubject.id` identifies the trust network member). The homeowner is identified via `homeowner_id` (their Cornerstone ID). Separate DID and platform UUID attributes for both parties were redundant.
+
+- **Removed `property_id`.** The PID (provincial land title identifier) serves as the property identifier. A separate platform-internal UUID is not needed as a credential attribute.
+
+- **Removed `granted_date`.** The credential metadata (`validFrom`) already captures when the credential was issued. A separate `granted_date` attribute duplicates this information.
+
+- **Signing model: Cornerstone Network signs on behalf of homeowners.** For the initial release, homeowner onboarding happens through professionals, and PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform flow and recorded in the `authorization_evidence` reference. Granular homeowner controls for modifying/revoking PAACs are planned for a future release.
 
 - **Access levels defined but enforcement needs validation.** The four access levels and ten `data_scope` values need to be validated against the actual platform implementation before shipping. The dev team should ensure enforcement logic matches these definitions.
 
@@ -69,7 +72,12 @@ The PAAC is a verifiable credential (VC) that grants selective access to propert
 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
-| `property_address` (JSON object) | Replaced by `pid` (String). The full address already lives in the Home Credential. Using `property_id` + `pid` is sufficient for the platform to resolve the property link, avoiding data duplication. |
+| `property_address` (JSON object) | Replaced by `pid` (String). The full address already lives in the Home Credential. PID is sufficient for the platform to resolve the property link. |
+| `homeowner_did` (String DID) | Redundant. The homeowner is identified via `homeowner_id` (their Cornerstone ID). |
+| `tnm_id` (String UUID) | Redundant. The trust network member is identified via the credential subject (`credentialSubject.id`). |
+| `tnm_did` (String DID) | Redundant. The trust network member's DID is the credential subject (`credentialSubject.id`). |
+| `property_id` (String UUID) | Redundant. PID (provincial land title identifier) serves as the property identifier. |
+| `granted_date` (String ISO 8601) | Redundant. The credential's `validFrom` metadata captures when the credential was issued. |
 
 ## 3. Credential Details
 
@@ -142,7 +150,7 @@ A PAAC will be revoked in cases such as:
 
 ### 4.2 Subject of the Credential
 
-The subject is the **trust network member (recipient)**, bound to their Cornerstone ID, with association to a specific property via `property_id` and `pid`.
+The subject is the **trust network member (recipient)**, bound to their Cornerstone ID (via `credentialSubject.id`), with association to a specific property via `pid`.
 
 ## 5. Issuance Rules
 
@@ -169,7 +177,7 @@ The PAAC is issued when ALL of the following are satisfied:
 ### 7.1 Required Fields
 
 **credentialSubject:**
-- `authorization_id`, `homeowner_id`, `homeowner_did`, `tnm_id`, `tnm_did`, `property_id`, `pid`, `data_scope`, `authorization_purpose`, `access_level`, `start_date`, `granted_date`, `authorization_evidence`, `relationship_category`
+- `authorization_id`, `homeowner_id`, `pid`, `data_scope`, `authorization_purpose`, `access_level`, `start_date`, `authorization_evidence`, `relationship_category`
 
 **Envelope:**
 - `issuer` (must be Cornerstone Network DID)
@@ -214,11 +222,7 @@ This credential does NOT:
   "credentialSubject": {
     "id": "did:example:tnm456",
     "authorization_id": "d4e5f6a7-b8c9-0123-def0-123456789012",
-    "homeowner_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "homeowner_did": "did:example:homeowner123",
-    "tnm_id": "e5f6a7b8-c9d0-1234-ef01-234567890123",
-    "tnm_did": "did:example:tnm456",
-    "property_id": "f6a7b8c9-d0e1-2345-f012-345678901234",
+    "homeowner_id": "did:example:homeowner123",
     "pid": "027-263-975",
     "data_scope": ["identity", "ownership", "equity", "insurance"],
     "authorization_purpose": "Mortgage refinance consultation",
@@ -226,7 +230,6 @@ This credential does NOT:
     "relationship_category": "mortgage_broker",
     "start_date": "2026-04-01T00:00:00Z",
     "expiration_date": "2027-04-01T00:00:00Z",
-    "granted_date": "2026-03-25T14:32:00Z",
     "authorization_evidence": "urn:uuid:d4e5f6a7-b8c9-0123-def0-123456789012"
   },
   "credentialStatus": [

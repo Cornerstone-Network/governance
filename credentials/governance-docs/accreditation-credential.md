@@ -36,7 +36,7 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
 
-### 2.1 Attribute Summary (8 Attributes)
+### 2.1 Attribute Summary (7 Attributes)
 
 | **#** | **Name**            | **Attribute**          | **Data Type**       | **Required** | **Notes** |
 |-------|---------------------|------------------------|---------------------|--------------|-----------|
@@ -45,9 +45,8 @@ The credential is issued directly into the **Cornerstone Wallet** and can be con
 | 003   | Licence Number      | `licence_number`       | String              | Yes          | Regulatory licence/registration number. |
 | 004   | Licence Expiry      | `licence_expiry`       | String (YYYY-MM-DD) | Yes          | Expiry date from regulator record. |
 | 005   | Regulator Name      | `regulator_name`       | String              | Yes          | e.g., "RECO", "BCFSA". |
-| 006   | Regulator URI       | `regulator_uri`        | URI                 | Yes          | Link to regulator's public registry. |
-| 007   | Jurisdiction        | `jurisdiction`         | String              | Yes          | Province of registration (e.g., ON, BC). |
-| 008   | Evidence Reference  | `evidence`             | URI                 | Yes          | Reference to verification evidence. |
+| 006   | Jurisdiction        | `jurisdiction`         | String              | Yes          | Province of registration (e.g., ON, BC). |
+| 007   | Evidence Reference  | `evidence`             | URI                 | Yes          | Reference to verification evidence (includes regulator registry link). |
 
 ### 2.2 Design Rationale
 
@@ -57,7 +56,9 @@ This credential underwent the most significant design changes in this version, i
 
 - **Removed `licence_status`** (REGISTERED/LICENSED/SUSPENDED). Embedding mutable status in a signed credential is an anti-pattern identified across every production credential ecosystem studied. A verifiable credential is a cryptographically signed, point-in-time attestation. The credential attests to the *fact of licensure* at issuance time. Status changes are handled through the **W3C Bitstring Status List v1.1**, which supports both `revocation` (permanent — licence permanently cancelled) and `suspension` (reversible — licence temporarily suspended pending investigation or remediation). When a licence is suspended by the regulator, the credential's suspension bit is flipped — no reissuance needed. When the suspension is lifted, the bit is cleared. This eliminates the staleness risk where a credential shows "ACTIVE" when the person has since been suspended.
 
-- **Removed `discipline_notes`**. Disciplinary records are mutable, narrative, and sensitive. Baking them into a signed credential creates three problems: (1) **Immutability conflict** — the credential would need to be reissued every time discipline status changes; (2) **Staleness risk** — a credential showing "no discipline" could be stale when conditions were added; (3) **Privacy risk** — disciplinary notes are sensitive data that exists in the signed blob even with selective disclosure. Verifiers who need detailed disciplinary information can check the regulator's public registry, which is linked via `regulator_uri`. This separation of concerns follows the pattern used by every production credential ecosystem studied.
+- **Removed `discipline_notes`**. Disciplinary records are mutable, narrative, and sensitive. Baking them into a signed credential creates three problems: (1) **Immutability conflict** — the credential would need to be reissued every time discipline status changes; (2) **Staleness risk** — a credential showing "no discipline" could be stale when conditions were added; (3) **Privacy risk** — disciplinary notes are sensitive data that exists in the signed blob even with selective disclosure. Verifiers who need detailed disciplinary information can check the regulator's public registry. This separation of concerns follows the pattern used by every production credential ecosystem studied.
+
+- **Removed `regulator_uri`**. The link to the regulator's public registry is part of the evidence reference rather than a standalone credential attribute. The evidence record captures the full verification context including the regulator source used. Verifiers needing the regulator registry link can retrieve it from the evidence reference.
 
 - **`profession_category` is free-form for the initial release.** To be standardized with a controlled vocabulary in a future version. Current examples: "Real Estate Broker", "Real Estate Representative", "Appraiser", "Mortgage Broker".
 
@@ -85,7 +86,7 @@ This credential underwent the most significant design changes in this version, i
                                      | - Disciplinary actions    |
                                      | - Conditions on licence   |
                                      | - Historical status       |
-                                     | - regulator_uri links here|
+                                     | - Linked via evidence ref |
                                      +---------------------------+
 ```
 
@@ -94,7 +95,8 @@ This credential underwent the most significant design changes in this version, i
 | Attribute | Reason for Removal |
 |-----------|-------------------|
 | `licence_status` (String: REGISTERED/LICENSED/SUSPENDED/REVOKED) | Mutable status in a signed credential is an anti-pattern. Status changes handled via W3C Bitstring Status List (revocation + suspension bitstrings). Every production VC ecosystem studied (vLEI, OCI, BC OrgBook) follows this pattern. |
-| `discipline_notes` (String) | Mutable, narrative, sensitive data. Creates immutability conflict, staleness risk, and privacy concerns. Verifiers should check regulator's public registry via `regulator_uri` for disciplinary details. |
+| `discipline_notes` (String) | Mutable, narrative, sensitive data. Creates immutability conflict, staleness risk, and privacy concerns. Verifiers should check regulator's public registry for disciplinary details. |
+| `regulator_uri` (URI) | Link to regulator's public registry is part of the evidence reference rather than a standalone credential attribute. Evidence record captures the full verification context including regulator source. |
 
 ## 3. Credential Details
 
@@ -219,19 +221,7 @@ The subject is the **individual holder**, bound to a **professional licence** at
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Regulator URI (006)*
-
-<table>
-  <tr><th>Attribute</th><td><code>regulator_uri</code></td></tr>
-  <tr><th>Description</th><td>URL to the regulator's public registry or website. Verifiers can check this URI for current disciplinary status, conditions, and detailed regulatory standing.</td></tr>
-  <tr><th>Source</th><td>System configuration.</td></tr>
-  <tr><th>Data Type</th><td>URI</td></tr>
-  <tr><th>Examples</th><td><code>https://registrantsearch.reco.on.ca/</code>, <code>https://www.bcfsa.ca/</code></td></tr>
-  <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Design Note</th><td>This URI serves as the link to detailed regulatory information (including discipline/conditions) that is intentionally not embedded in the credential. See Design Rationale section 2.2.</td></tr>
-</table>
-
-*Jurisdiction (007)*
+*Jurisdiction (006)*
 
 <table>
   <tr><th>Attribute</th><td><code>jurisdiction</code></td></tr>
@@ -244,7 +234,7 @@ The subject is the **individual holder**, bound to a **professional licence** at
 
 #### 4.3.3 Evidence Attributes
 
-*Evidence Reference (008)*
+*Evidence Reference (007)*
 
 <table>
   <tr><th>Attribute</th><td><code>evidence</code></td></tr>
@@ -264,7 +254,6 @@ The subject is the **individual holder**, bound to a **professional licence** at
 - `licence_number`
 - `licence_expiry`
 - `regulator_name`
-- `regulator_uri`
 - `jurisdiction`
 - `evidence`
 
@@ -306,7 +295,6 @@ No production verifiable credential implementations exist for real estate profes
     "licence_number": "RE-2025-004821",
     "licence_expiry": "2028-03-01",
     "regulator_name": "RECO",
-    "regulator_uri": "https://registrantsearch.reco.on.ca/",
     "jurisdiction": "ON",
     "evidence": "urn:uuid:d4e5f6a7-b8c9-0123-def0-123456789012"
   },

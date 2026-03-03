@@ -28,17 +28,16 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 | **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
 | **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
 
-### 2.1 Attribute Summary (7 Attributes)
+### 2.1 Attribute Summary (6 Attributes)
 
 | **#** | **Name**            | **Attribute**          | **Data Type**       | **Required** | **Notes** |
 |-------|---------------------|------------------------|---------------------|--------------|-----------|
 | 001   | Cornerstone ID Reference | `cornerstone_id` | DID/URI             | Yes          | Reference to holder's Cornerstone ID. |
 | 002   | Employer Name       | `employer_name`        | String              | Yes          | Organization legal name. |
-| 003   | Employer DID        | `employer_did`         | DID                 | Yes          | Organization's decentralized identifier. |
-| 004   | Role/Title          | `role_title`           | String              | Yes          | Job title or role within organization. |
-| 005   | Affiliation Type    | `affiliation_type`     | String (enum)       | Yes          | `employee`, `contractor`, `delegate`. |
-| 006   | Start Date          | `start_date`           | String (YYYY-MM-DD) | Yes          | When affiliation began. |
-| 007   | Team/Office         | `team_office`          | String              | No           | Department, team, or office location. |
+| 003   | Role/Title          | `role_title`           | String              | Yes          | Job title or role within organization. |
+| 004   | Affiliation Type    | `affiliation_type`     | String (enum)       | Yes          | `employee`, `contractor`, `delegate`. |
+| 005   | Start Date          | `start_date`           | String (YYYY-MM-DD) | Yes          | When affiliation began. |
+| 006   | Team/Office         | `team_office`          | String              | No           | Department, team, or office location. |
 
 ### 2.2 Design Rationale
 
@@ -47,6 +46,8 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 - **Removed `status` field.** A credential with `status: terminated` is semantically contradictory — why would a valid, signed credential assert that the relationship it attests to no longer exists? When an affiliation ends, the credential is revoked via the W3C Bitstring Status List. A revoked credential can still be presented by the holder, and the verifier sees the revocation status through the credential status mechanism. This is the standard pattern across all production VC ecosystems studied.
 
 - **Issued by Cornerstone Network as a service.** While conceptually this is an employer attestation, Cornerstone Network issues these as a service on behalf of Network Partners for the initial release. Network partners provide employment/affiliation data out of band. The employer registration process is managed by Cornerstone. No employer-facing issuance portal is needed for the initial release.
+
+- **Removed `employer_did`.** The employer's decentralized identifier is not needed as a credential attribute. The employer name is sufficient for the initial release. If organizational DID resolution becomes necessary, it can be handled at the platform level or added in a future version.
 
 - **Independent from other credentials.** The Professional Credential is independent from the Accreditation Credential and Portfolio Issuer Credential. A professional may hold only a Professional Credential (employed but not licensed), only an Accreditation Credential (licensed but not employed), or both. No hard dependencies are enforced between them.
 
@@ -59,6 +60,7 @@ The credential references the holder's **Cornerstone ID** for identity binding, 
 | Attribute | Reason for Removal |
 |-----------|-------------------|
 | `status` (String: active/inactive/terminated) | Mutable status embedded in an immutable signed credential is an anti-pattern. When affiliation ends, the credential is revoked. The W3C Bitstring Status List supports both revocation (permanent) and suspension (reversible), covering all status change scenarios. |
+| `employer_did` (DID) | Not needed as a credential attribute. Employer name is sufficient for the initial release. Organizational DID resolution can be handled at the platform level if needed. |
 
 ## 3. Credential Details
 
@@ -70,7 +72,7 @@ The Professional Credential is issued by the **Cornerstone Network**, acting as 
 
 ### 3.2 Schema and Credential Definition Governance
 
-The Professional Credential schema is managed by the Cornerstone Network and registered on the Cornerstone Trust Registry. While the schema is standardized, each credential identifies the employer via `employer_name` and `employer_did`.
+The Professional Credential schema is managed by the Cornerstone Network and registered on the Cornerstone Trust Registry. While the schema is standardized, each credential identifies the employer via `employer_name`.
 
 ### 3.3 Issuer Data Source
 
@@ -147,20 +149,9 @@ The subject is the **individual holder**, bound to an **organizational affiliati
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Employer DID (003)*
-
-<table>
-  <tr><th>Attribute</th><td><code>employer_did</code></td></tr>
-  <tr><th>Description</th><td>Decentralized identifier of the employing organization.</td></tr>
-  <tr><th>Source</th><td>Trust Registry.</td></tr>
-  <tr><th>Data Type</th><td>DID</td></tr>
-  <tr><th>Examples</th><td><code>did:web:suttongroup.ca</code></td></tr>
-  <tr><th>Required</th><td>Yes</td></tr>
-</table>
-
 #### 4.3.3 Affiliation Attributes
 
-*Role/Title (004)*
+*Role/Title (003)*
 
 <table>
   <tr><th>Attribute</th><td><code>role_title</code></td></tr>
@@ -171,7 +162,7 @@ The subject is the **individual holder**, bound to an **organizational affiliati
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Affiliation Type (005)*
+*Affiliation Type (004)*
 
 <table>
   <tr><th>Attribute</th><td><code>affiliation_type</code></td></tr>
@@ -182,7 +173,7 @@ The subject is the **individual holder**, bound to an **organizational affiliati
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Start Date (006)*
+*Start Date (005)*
 
 <table>
   <tr><th>Attribute</th><td><code>start_date</code></td></tr>
@@ -192,7 +183,7 @@ The subject is the **individual holder**, bound to an **organizational affiliati
   <tr><th>Required</th><td>Yes</td></tr>
 </table>
 
-*Team/Office (007)*
+*Team/Office (006)*
 
 <table>
   <tr><th>Attribute</th><td><code>team_office</code></td></tr>
@@ -210,7 +201,6 @@ The subject is the **individual holder**, bound to an **organizational affiliati
 **credentialSubject:**
 - `cornerstone_id`
 - `employer_name`
-- `employer_did`
 - `role_title`
 - `affiliation_type`
 - `start_date`
@@ -244,7 +234,6 @@ The subject is the **individual holder**, bound to an **organizational affiliati
     "id": "did:example:professional456",
     "cornerstone_id": "did:example:professional456",
     "employer_name": "Sutton Group",
-    "employer_did": "did:web:suttongroup.ca",
     "role_title": "Real Estate Agent",
     "affiliation_type": "employee",
     "start_date": "2022-06-15",
