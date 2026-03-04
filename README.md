@@ -1,6 +1,6 @@
-# COPA Governance Repository
+# Cornerstone Network Governance Repository
 
-This repository serves as a **Verifiable Data Registry** for the Canadian Open Property Association (COPA) ecosystem.
+This repository serves as a **Verifiable Data Registry** for the Cornerstone Network ecosystem.
 
 > **Note**: This is a data registry for credential artifacts. The Trust Registry (managing entities and authority statements) is a separate platform that references this registry for schemas, contexts, and VCT definitions.
 
@@ -75,8 +75,8 @@ Based on the SD-JWT-VC specification and W3C VC standards, these are **distinct 
 
 | Artifact | Purpose | Created By | Consumed By |
 |----------|---------|------------|-------------|
-| **JSON Schema** | Data validation (required fields, types, formats) | Ecosystem (COPA) | Issuers, validators |
-| **JSON-LD Context** | Semantic meaning for machine interoperability | Ecosystem (COPA) | Verifiers, linked data processors |
+| **JSON Schema** | Data validation (required fields, types, formats) | Ecosystem (Cornerstone) | Issuers, validators |
+| **JSON-LD Context** | Semantic meaning for machine interoperability | Ecosystem (Cornerstone) | Verifiers, linked data processors |
 | **VCT** | Branding/rendering (colors, logos, labels) | Credential Issuers | Wallet apps, credential viewers |
 
 **Key Insight**: The SD-JWT-VC specification explicitly does NOT include JSON-LD contexts in VCT files. VCT focuses on display/rendering metadata, while JSON-LD contexts provide RDF semantics for the W3C VC Data Model. They serve different purposes and remain separate files.

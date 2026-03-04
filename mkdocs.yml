@@ -74,7 +74,7 @@ extra:
     property: G-7W7P8DLR11
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/Canadian-Open-Property-Association
+      link: https://github.com/Cornerstone-Network
 
 docs_dir: site
 site_dir: build
