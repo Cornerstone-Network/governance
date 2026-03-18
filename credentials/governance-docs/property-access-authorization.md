@@ -1,275 +1,324 @@
-# Property Access Authorization Credential (PAAC) – Credential Governance
-
-## 1. About this Document
-
-This document describes the **Property Access Authorization Credential (PAAC)** verifiable credential to help potential verifiers determine whether it is suitable for their needs. The intended audience includes real estate professionals, lenders, insurers, financial service providers, trust network members, and any relying parties requiring authorized access to homeowner portfolio data.
-
-The PAAC is issued by the **Cornerstone Network** on behalf of homeowners to members of their property-specific trust network — professionals, advisors, service providers, family members, and trusted individuals. It represents **authorization to access specific portfolio data for a specific property** as defined by the homeowner.
-
-**External terminology note**: This credential is referred to as "Letter of Authorization" in user-facing applications, while "Property Access Authorization Credential (PAAC)" is the internal technical term.
-
-### 1.1 Version History
-
-| Ver.      | Date        | Notes                               | Author(s) |
-|-----------|-------------|-------------------------------------|-------------|
-| **0.9**   | 26-Feb-2026 | Replaced `property_address` with `pid` for atomicity; updated signing model to Cornerstone Network on behalf of homeowners; updated schema hosting; added design rationale | Mathieu Glaude |
-| **0.1**   | TBA         | Initial release                      | Mathieu Glaude |
-
-## 2. Credential Overview
-
-The PAAC is a verifiable credential (VC) that grants selective access to property portfolio data for trust network members. It enables the holder to access specific portfolio information while maintaining granular property-level and data-level control over what is shared and for what purpose.
-
-- **Issued on behalf of homeowners** to trust network members for a specific property
-- **Property-specific scope**: Each Home Credential (property) has its own trust network; separate PAACs issued per property
-- **Defines data sharing scope**: Specifies which portfolio data elements can be accessed
-- **Purpose-bound authorization**: Documents the intent and purpose of data sharing
-- **Access level control**: Read-only, operational, advisory, or transactional access
-- **Time-bound validity**: Can include expiration dates or remain valid until revoked
-- **Revocable at any time**
-
-|              |                                                                 |
-|--------------|-----------------------------------------------------------------|
-| **Credential:** | Property Access Authorization Credential (PAAC) / "Letter of Authorization" |
-| **Schema:**     | PAAC v0.9                                                   |
-| **Issuer:**     | Cornerstone Network (on behalf of homeowners)               |
-| **Issuer DID:** | TBD (e.g., `did:web:trustinfrastructure.com:cornerstone`)   |
-| **Format:**     | W3C Verifiable Credentials (JSON-LD)                        |
-
-### 2.1 Attribute Summary (10 Attributes)
-
-| **#** | **Name**            | **Attribute**               | **Data Type**            | **Required** | **Notes** |
-|-------|---------------------|-----------------------------|--------------------------|--------------|-----------|
-| 001   | Authorization ID    | `authorization_id`          | String (UUID)            | Yes          | Platform-generated unique identifier. |
-| 002   | Homeowner ID        | `homeowner_id`              | String (DID/URI)         | Yes          | Cornerstone ID of the homeowner sharing their property. |
-| 003   | PID                 | `pid`                       | String                   | Yes          | Provincial land title identifier — serves as the property identifier. |
-| 004   | Data Scope          | `data_scope`                | JSON array (enum strings)| Yes          | Data categories the recipient can access. |
-| 005   | Authorization Purpose | `authorization_purpose`   | String                   | Yes          | Intent of data sharing. |
-| 006   | Access Level        | `access_level`              | String (enum)            | Yes          | `READ_ONLY`, `OPERATIONAL`, `ADVISORY`, `TRANSACTIONAL`. |
-| 007   | Start Date          | `start_date`                | String (ISO 8601)        | Yes          | Authorization validity commencement. |
-| 008   | Expiration Date     | `expiration_date`           | String (ISO 8601) or null | No          | If omitted, valid until revoked. |
-| 009   | Authorization Evidence | `authorization_evidence` | String / URI             | Yes          | References homeowner action log. |
-| 010   | Relationship Category | `relationship_category`   | String (enum)            | Yes          | Category of TNM's relationship to homeowner. |
-
-### 2.2 Design Rationale
-
-**Attribute decisions in this version:**
-
-- **Replaced `property_address` (JSON object) with `pid` (String).** The full property address already lives in the Home Credential. The PAAC uses `pid` (provincial land title registry identifier) to resolve the link to the property. This avoids triple-duplication of address data across Cornerstone ID (`postal_address`), Home Credential (`property_address`), and PAAC.
-
-- **`homeowner_id` repurposed as Cornerstone ID reference.** Previously was a platform UUID; now references the homeowner's Cornerstone ID (DID/URI). This identifies the person sharing their property and is consistent with how other credentials reference identity.
-
-- **Removed `homeowner_did`, `tnm_id`, `tnm_did`.** DIDs are resolved at the credential envelope level (`credentialSubject.id` identifies the trust network member). The homeowner is identified via `homeowner_id` (their Cornerstone ID). Separate DID and platform UUID attributes for both parties were redundant.
-
-- **Removed `property_id`.** The PID (provincial land title identifier) serves as the property identifier. A separate platform-internal UUID is not needed as a credential attribute.
-
-- **Removed `granted_date`.** The credential metadata (`validFrom`) already captures when the credential was issued. A separate `granted_date` attribute duplicates this information.
-
-- **Signing model: Cornerstone Network signs on behalf of homeowners.** For the initial release, homeowner onboarding happens through professionals, and PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform flow and recorded in the `authorization_evidence` reference. Granular homeowner controls for modifying/revoking PAACs are planned for a future release.
-
-- **Access levels defined but enforcement needs validation.** The four access levels and ten `data_scope` values need to be validated against the actual platform implementation before shipping. The dev team should ensure enforcement logic matches these definitions.
-
-### 2.3 Removed Attributes (v0.9)
-
-| Attribute | Reason for Removal |
-|-----------|-------------------|
-| `property_address` (JSON object) | Replaced by `pid` (String). The full address already lives in the Home Credential. PID is sufficient for the platform to resolve the property link. |
-| `homeowner_did` (String DID) | Redundant. The homeowner is identified via `homeowner_id` (their Cornerstone ID). |
-| `tnm_id` (String UUID) | Redundant. The trust network member is identified via the credential subject (`credentialSubject.id`). |
-| `tnm_did` (String DID) | Redundant. The trust network member's DID is the credential subject (`credentialSubject.id`). |
-| `property_id` (String UUID) | Redundant. PID (provincial land title identifier) serves as the property identifier. |
-| `granted_date` (String ISO 8601) | Redundant. The credential's `validFrom` metadata captures when the credential was issued. |
-
-## 3. Credential Details
-
-### 3.1 Issuer
-
-The PAAC is issued by the **Cornerstone Network** on behalf of homeowners. For the initial release, PAACs are auto-issued during homeowner onboarding by professionals.
-
-### 3.2 Data Scope Values
-
-The `data_scope` attribute accepts the following enum values:
-
-| Value | Description |
-|-------|-------------|
-| `identity` | Homeowner identity information |
-| `ownership` | Property ownership details |
-| `property_details` | Physical property characteristics |
-| `equity` | Equity position (market value, mortgage balance) |
-| `costs` | Property costs (taxes, maintenance, utilities) |
-| `insurance` | Insurance policy information |
-| `mortgage` | Mortgage details and terms |
-| `valuations` | Property valuations and appraisals |
-| `documents` | Property documents (title, agreements) |
-| `full_portfolio` | Complete portfolio access (all categories) |
-
-### 3.3 Access Levels
-
-| Level | Description |
-|-------|-------------|
-| `READ_ONLY` | View data only. |
-| `OPERATIONAL` | View + operational actions (e.g., property manager updating maintenance logs). |
-| `ADVISORY` | View + advisory actions (e.g., REP providing market insights). |
-| `TRANSACTIONAL` | View + transactional actions (e.g., authorized to initiate refinance on homeowner's behalf). |
-
-### 3.4 Relationship Categories
-
-Valid values for `relationship_category`: `realtor`, `mortgage_broker`, `family_member`, `accountant`, `lawyer`, `insurance_agent`, `property_manager`, `contractor`, `financial_advisor`, `other`.
-
-### 3.5 Credential Status
-
-Credential status is managed via the **W3C Bitstring Status List v1.1**, supporting both `revocation` and `suspension`.
-
-### 3.6 Revocation
-
-A PAAC will be revoked in cases such as:
-1. Homeowner explicitly revokes authorization (via platform)
-2. Credential reaches `expiration_date` (automatic)
-3. Trust network relationship ends
-4. Property sold or Home Credential revoked
-5. Homeowner's Cornerstone ID revoked
-6. Recipient's Cornerstone ID revoked or expired
-7. Security incident or unauthorized use detected
-8. Homeowner account closed or deactivated
-9. Legal or regulatory request
-
-**Cascade Revocation** (managed operationally by platform):
-- Homeowner's Cornerstone ID revoked → all PAACs issued on behalf of that homeowner are revoked
-- Homeowner's Home Credential for specific property revoked → all PAACs for that property are revoked
-- Recipient's Cornerstone ID revoked → all PAACs held by that recipient are revoked
-
-**Revocation is immediate** — no grace period. Access terminates immediately upon revocation.
-
-## 4. Credential Definition
-
-### 4.1 Credential Schema
-
-- **Schema ID (URI):** `https://trustinfrastructure.com/cornerstone/schemas/property-access-authorization.json` *(exact URL TBD)*
-- **Contexts:**
-  - `https://www.w3.org/ns/credentials/v2`
-  - `https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v0.9.json` *(exact URL TBD)*
-
-### 4.2 Subject of the Credential
-
-The subject is the **trust network member (recipient)**, bound to their Cornerstone ID (via `credentialSubject.id`), with association to a specific property via `pid`.
-
-## 5. Issuance Rules
-
-The PAAC is issued when ALL of the following are satisfied:
-1. Homeowner holds valid Cornerstone ID
-2. Homeowner holds valid Home Credential for the specific property referenced
-3. Recipient holds valid Cornerstone ID
-4. Authorization scope, purpose, access level, and validity period are defined
-5. Platform validates homeowner authority and recipient identity
-
-**For the initial release**: PAACs are auto-issued when a professional onboards a homeowner. The homeowner's consent is captured through the platform onboarding flow.
-
-## 6. Refresh & Expiration
-
-**Expiration patterns:**
-- **Short-term service provider access**: 30-90 days (insurance quote, mortgage application)
-- **Ongoing professional advisor access**: 1-3 years (REP relationship, financial advisor)
-- **Family trust network access**: No expiration (ongoing family monitoring)
-
-**Refresh** follows revoke-and-reissue pattern (no in-place updates).
-
-## 7. Validation Rules
-
-### 7.1 Required Fields
-
-**credentialSubject:**
-- `authorization_id`, `homeowner_id`, `pid`, `data_scope`, `authorization_purpose`, `access_level`, `start_date`, `authorization_evidence`, `relationship_category`
-
-**Envelope:**
-- `issuer` (must be Cornerstone Network DID)
-- `validFrom`
-- `credentialSchema`
-- `credentialStatus`
-
-### 7.2 Forbidden Fields
-
-- Portfolio data contents (equity amounts, mortgage balances, property valuations, insurance policy details)
-- Sensitive personal information (SINs, tax IDs, banking info, credit scores)
-- Predicates or derived fields
-- Assurance level indicators
-
-## 8. Policy Integration
-
-### 8.1 Capabilities Granted
-
-- Property-specific portfolio data access per `data_scope`
-- Purpose-bound access per `authorization_purpose`
-- Access level enforcement per `access_level`
-- Time-bound access per `start_date` / `expiration_date`
-
-### 8.2 Out of Scope
-
-This credential does NOT:
-- Grant ownership rights or control over the property
-- Include sensitive financial data directly (credentials enable access, not contain data)
-- Authorize changes to portfolio data (unless explicitly scoped as TRANSACTIONAL)
-
-## 9. Schema Definition (High-Level)
-
-```json
-{
-  "@context": [
-    "https://www.w3.org/ns/credentials/v2",
-    "https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v0.9.json"
-  ],
-  "type": ["VerifiableCredential", "PropertyAccessAuthorizationCredential"],
-  "issuer": "did:web:trustinfrastructure.com:cornerstone",
-  "validFrom": "2026-03-25T14:32:00Z",
-  "credentialSubject": {
-    "id": "did:example:tnm456",
-    "authorization_id": "d4e5f6a7-b8c9-0123-def0-123456789012",
-    "homeowner_id": "did:example:homeowner123",
-    "pid": "027-263-975",
-    "data_scope": ["identity", "ownership", "equity", "insurance"],
-    "authorization_purpose": "Mortgage refinance consultation",
-    "access_level": "READ_ONLY",
-    "relationship_category": "mortgage_broker",
-    "start_date": "2026-04-01T00:00:00Z",
-    "expiration_date": "2027-04-01T00:00:00Z",
-    "authorization_evidence": "urn:uuid:d4e5f6a7-b8c9-0123-def0-123456789012"
-  },
-  "credentialStatus": [
-    {
-      "id": "https://trustinfrastructure.com/cornerstone/status/revocation#67890",
-      "type": "BitstringStatusListEntry",
-      "statusPurpose": "revocation",
-      "statusListIndex": "67890",
-      "statusListCredential": "https://trustinfrastructure.com/cornerstone/status/revocation"
-    }
-  ],
-  "evidence": [
-    {
-      "type": "AuthorizationAction",
-      "method": "PlatformAuthorizationFlow",
-      "verificationDate": "2026-03-25T14:32:00Z",
-      "matchFields": ["homeowner_authority", "property_ownership", "recipient_identity"],
-      "recordLocator": "urn:uuid:d4e5f6a7-b8c9-0123-def0-123456789012",
-      "verifier": "Cornerstone Network"
-    }
-  ],
-  "credentialSchema": {
-    "id": "https://trustinfrastructure.com/cornerstone/schemas/property-access-authorization.json",
-    "type": "JsonSchema"
-  }
-}
-```
-
-## 10. References
-
-### 10.1 Industry References
-
-- **W3C Verifiable Credentials Data Model 2.0** — [w3.org/TR/vc-data-model-2.0](https://www.w3.org/TR/vc-data-model-2.0/)
-- **W3C Bitstring Status List v1.1** — [w3c.github.io/vc-bitstring-status-list](https://w3c.github.io/vc-bitstring-status-list/)
+# Property Access Authorization — Schema Documentation
+
+## Table of Contents
+
+- [1. About this Document](#1-about-this-document)
+  - [1.1 Version History](#11-version-history)
+- [2. Schema Overview](#2-schema-overview)
+  - [2.1 Attribute Summary](#21-attribute-summary)
+- [3. Schema Definition](#3-schema-definition)
+  - [3.1 Attributes](#31-attributes)
+  - [3.2 Enumerated Values](#32-enumerated-values)
+- [4. Data Source Requirements](#4-data-source-requirements)
+  - [4.1 Prerequisite Credentials](#41-prerequisite-credentials)
+  - [4.2 Authorization Source](#42-authorization-source)
+  - [4.3 Data Currency](#43-data-currency)
+- [5. Status Management](#5-status-management)
+- [6. Design Rationale](#6-design-rationale)
+- [7. Governance](#7-governance)
+- [8. Implementation References](#8-implementation-references)
 
 ---
 
-**Document Control**
+## 1. About this Document
 
-- **Owner**: Cornerstone Network
-- **Governance Body**: Cornerstone Network
-- **Review Cycle**: Annual or upon breaking schema changes
-- **Schema Registry**: `https://trustinfrastructure.com/cornerstone/schemas/` *(exact URL TBD)*
+This document defines the **Property Access Authorization Credential (PAAC)** schema — a structured data model for verifiable credentials that authorize a trust network member to access a homeowner's property portfolio data. Also referred to as a "Letter of Authorization." It is intended for governance reviewers, schema implementers, credential issuers, and verifier application developers evaluating whether this schema meets their requirements.
+
+The PAAC schema captures a homeowner's consent to share specific property data categories with a specific recipient, at a defined access level, for a stated purpose.
+
+### 1.1 Version History
+
+| Ver.    | Date         | Notes                                                                 | Author(s)       |
+|---------|--------------|-----------------------------------------------------------------------|-----------------|
+| **1.0** | 18-Mar-2026  | Rewritten as schema documentation; governance body perspective        | Mathieu Glaude  |
+| **0.9** | 26-Feb-2026  | Simplified; replaced `property_address` with `pid`; removed redundant DIDs; added access levels and relationship categories | Mathieu Glaude  |
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 2. Schema Overview
+
+The Property Access Authorization Credential (PAAC) schema defines the data structure for a verifiable credential that authorizes a trust network member to access a homeowner's property portfolio data. It captures the homeowner's consent: what data categories the recipient can access, at what permission tier, for what purpose, and for how long. The PAAC enables access only — it does not contain the portfolio data itself.
+
+|                        |                                                                                               |
+|------------------------|-----------------------------------------------------------------------------------------------|
+| **Schema:**            | Property Access Authorization v1.0                                                            |
+| **Format:**            | W3C Verifiable Credentials (JSON-LD)                                                          |
+| **Governance Body:**   | Cornerstone Network                                                                           |
+| **Schema URI:**        | `https://trustinfrastructure.com/cornerstone/schemas/property-access-authorization.json`      |
+
+### 2.1 Attribute Summary
+
+| **#** | **Name**                  | **Attribute**                | **Data Type**        | **Required** |
+|-------|---------------------------|------------------------------|----------------------|--------------|
+| 001   | Authorization ID          | `authorization_id`           | String (UUID)        | Yes          |
+| 002   | Homeowner ID              | `homeowner_id`               | DID / URI            | Yes          |
+| 003   | PID                       | `pid`                        | String               | Yes          |
+| 004   | Data Scope                | `data_scope`                 | JSON array (enums)   | Yes          |
+| 005   | Authorization Purpose     | `authorization_purpose`      | String               | Yes          |
+| 006   | Access Level              | `access_level`               | String (enum)        | Yes          |
+| 007   | Start Date                | `start_date`                 | String (date)        | Yes          |
+| 008   | Expiration Date           | `expiration_date`            | String (date) / null | No           |
+| 009   | Authorization Evidence    | `authorization_evidence`     | String / URI         | Yes          |
+| 010   | Relationship Category     | `relationship_category`      | String (enum)        | Yes          |
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 3. Schema Definition
+
+### 3.1 Attributes
+
+*Authorization ID (001)*
+
+<table>
+  <tr><th>Attribute</th><td><code>authorization_id</code></td></tr>
+  <tr><th>Description</th><td>Platform-generated unique identifier for this authorization.</td></tr>
+  <tr><th>Data Type</th><td>String (UUID)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>d4e5f6a7-8901-23bc-def0-456789012345</code></td></tr>
+</table>
+
+*Homeowner ID (002)*
+
+<table>
+  <tr><th>Attribute</th><td><code>homeowner_id</code></td></tr>
+  <tr><th>Description</th><td>Cornerstone ID (DID/URI) of the homeowner granting access to their property portfolio data.</td></tr>
+  <tr><th>Data Type</th><td>DID / URI</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>did:web:trustinfrastructure.com:cornerstone:id:b9e4c3d2</code></td></tr>
+</table>
+
+*PID (003)*
+
+<table>
+  <tr><th>Attribute</th><td><code>pid</code></td></tr>
+  <tr><th>Description</th><td>Provincial land title Parcel Identifier for the property this authorization applies to. Resolves to the specific property without duplicating address data.</td></tr>
+  <tr><th>Data Type</th><td>String</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>027-263-975</code></td></tr>
+</table>
+
+*Data Scope (004)*
+
+<table>
+  <tr><th>Attribute</th><td><code>data_scope</code></td></tr>
+  <tr><th>Description</th><td>Array of data category identifiers the recipient is authorized to access. See <a href="#32-enumerated-values">Enumerated Values</a> for valid options.</td></tr>
+  <tr><th>Data Type</th><td>JSON array of enum strings</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>["ownership", "property_details", "valuations"]</code></td></tr>
+</table>
+
+*Authorization Purpose (005)*
+
+<table>
+  <tr><th>Attribute</th><td><code>authorization_purpose</code></td></tr>
+  <tr><th>Description</th><td>Human-readable statement of the intent behind the data sharing authorization.</td></tr>
+  <tr><th>Data Type</th><td>String</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>Property listing and market analysis</code>, <code>Mortgage renewal assessment</code></td></tr>
+</table>
+
+*Access Level (006)*
+
+<table>
+  <tr><th>Attribute</th><td><code>access_level</code></td></tr>
+  <tr><th>Description</th><td>Permission tier defining what the recipient can do with the accessed data. See <a href="#32-enumerated-values">Enumerated Values</a>.</td></tr>
+  <tr><th>Data Type</th><td>String (enum)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>READ_ONLY</code>, <code>ADVISORY</code></td></tr>
+</table>
+
+*Start Date (007)*
+
+<table>
+  <tr><th>Attribute</th><td><code>start_date</code></td></tr>
+  <tr><th>Description</th><td>Date from which the authorization is valid, in ISO 8601 format.</td></tr>
+  <tr><th>Data Type</th><td>String (YYYY-MM-DD)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>2026-03-18</code></td></tr>
+</table>
+
+*Expiration Date (008)*
+
+<table>
+  <tr><th>Attribute</th><td><code>expiration_date</code></td></tr>
+  <tr><th>Description</th><td>Optional end date for the authorization. Null means the authorization remains valid until explicitly revoked.</td></tr>
+  <tr><th>Data Type</th><td>String (YYYY-MM-DD) or null</td></tr>
+  <tr><th>Required</th><td>No</td></tr>
+  <tr><th>Examples</th><td><code>2026-06-18</code> (90-day provider access), <code>null</code> (family trust network)</td></tr>
+</table>
+
+*Authorization Evidence (009)*
+
+<table>
+  <tr><th>Attribute</th><td><code>authorization_evidence</code></td></tr>
+  <tr><th>Description</th><td>URI reference to the homeowner action log entry documenting consent.</td></tr>
+  <tr><th>Data Type</th><td>String / URI</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>urn:cornerstone:evidence:e1f2a3b4-5678-90cd-ef01-234567890abc</code></td></tr>
+</table>
+
+*Relationship Category (010)*
+
+<table>
+  <tr><th>Attribute</th><td><code>relationship_category</code></td></tr>
+  <tr><th>Description</th><td>The trust network member's relationship type to the homeowner. See <a href="#32-enumerated-values">Enumerated Values</a>.</td></tr>
+  <tr><th>Data Type</th><td>String (enum)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>realtor</code>, <code>mortgage_broker</code>, <code>family_member</code></td></tr>
+</table>
+
+### 3.2 Enumerated Values
+
+**Data Scope (`data_scope`) values:**
+
+| Value              | Description                                           |
+|--------------------|-------------------------------------------------------|
+| `identity`         | Homeowner identity information                        |
+| `ownership`        | Property ownership details                            |
+| `property_details` | Physical property characteristics                     |
+| `equity`           | Equity position (market value, mortgage balance)       |
+| `costs`            | Property costs (taxes, maintenance, utilities)         |
+| `insurance`        | Insurance policy information                          |
+| `mortgage`         | Mortgage details and terms                            |
+| `valuations`       | Property valuations and appraisals                    |
+| `documents`        | Property documents (title, agreements)                |
+| `full_portfolio`   | Complete portfolio access (all categories)             |
+
+**Access Level (`access_level`) values:**
+
+| Value           | Capability                                                             |
+|-----------------|------------------------------------------------------------------------|
+| `READ_ONLY`     | View data only                                                         |
+| `OPERATIONAL`   | View + operational actions (e.g., maintenance logging)                 |
+| `ADVISORY`      | View + advisory actions (e.g., market insights)                        |
+| `TRANSACTIONAL` | View + transactional actions (e.g., authorize refinance initiation)    |
+
+**Relationship Category (`relationship_category`) values:**
+
+`realtor`, `mortgage_broker`, `family_member`, `accountant`, `lawyer`, `insurance_agent`, `property_manager`, `contractor`, `financial_advisor`, `other`
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 4. Data Source Requirements
+
+### 4.1 Prerequisite Credentials
+
+A PAAC can only be issued when all conditions are met:
+- Homeowner holds a valid **Cornerstone ID**
+- Homeowner holds a valid **Home Credential** for the referenced property (PID)
+- Recipient holds a valid **Cornerstone ID**
+- Scope, purpose, access level, and validity period are defined
+
+### 4.2 Authorization Source
+
+The authorization originates from the homeowner's explicit consent, captured in the platform flow. In the initial release pattern, PAACs may be auto-issued during professional-facilitated homeowner onboarding with consent captured in the platform flow.
+
+### 4.3 Data Currency
+
+- A PAAC reflects the authorization state at issuance time.
+- Scope changes, purpose changes, or access level changes require revocation and re-issuance (no in-place updates).
+- Typical validity patterns:
+  - **Short-term provider access:** 30–90 days (insurance quotes, mortgage applications)
+  - **Ongoing professional advisor:** 1–3 years (real estate professionals, financial advisors)
+  - **Family trust network:** No expiration (perpetual family monitoring)
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 5. Status Management
+
+This schema requires credentials to implement **W3C Bitstring Status List v1.1** for lifecycle management, with separate bitstrings for revocation and suspension.
+
+| Event                              | Action   | Status Handling                           |
+|------------------------------------|----------|-------------------------------------------|
+| Homeowner grants access            | Issue    | Index set to 0 (valid)                    |
+| Homeowner revokes access           | Revoke   | Revocation bit = 1 (permanent, immediate) |
+| Expiration date reached            | Revoke   | Revocation bit = 1 (permanent)            |
+| Property sold / Home Cred revoked  | Revoke   | Revocation bit = 1 (permanent)            |
+| Homeowner Cornerstone ID revoked   | Revoke   | Revocation bit = 1 (permanent)            |
+| Recipient Cornerstone ID revoked   | Revoke   | Revocation bit = 1 (permanent)            |
+| Security incident                  | Suspend  | Suspension bit = 1 (reversible)           |
+| Investigation cleared              | Reinstate| Suspension bit = 0                        |
+
+**Cascade rules:**
+- Homeowner Cornerstone ID revocation → all their PAACs revoked
+- Recipient Cornerstone ID revocation → all PAACs they hold revoked
+- Home Credential revocation → all PAACs for that specific property revoked (other properties unaffected)
+
+**Revocation timing:** Immediate — no grace period.
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 6. Design Rationale
+
+**`pid` replaces `property_address`:** Earlier versions included a full `property_address` JSON object. This created address triplication across Cornerstone ID, Home Credential, and PAAC. The PID is the canonical property identifier — address resolution happens at the application layer.
+
+**`homeowner_id` as Cornerstone ID reference:** Repurposed from a platform UUID to a Cornerstone ID DID/URI, aligning with the ecosystem's chained credential model.
+
+**Removed redundant DIDs:** `homeowner_did` and `tnm_did` were removed — the credential subject's `id` field and `homeowner_id` already capture both parties.
+
+**Removed duplicate identifiers:** `tnm_id`, `property_id`, and `granted_date` were removed as duplicative of information available through credential subject, PID resolution, and `validFrom` envelope field respectively.
+
+**Forbidden data:** This schema explicitly excludes portfolio data contents (equity, mortgages, valuations, insurance details), sensitive personal information (SINs, tax IDs, banking, credit scores), predicates, and assurance level indicators. The PAAC enables access — it does not transport data.
+
+**Subject definition:** The credential subject is the **trust network member (recipient)**, not the homeowner. The homeowner is identified via `homeowner_id`.
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 7. Governance
+
+- **Governance Body:** Cornerstone Network
+- **Schema Owner:** Cornerstone Network
+- **Review Cycle:** Annual, or upon breaking schema changes
+- **Change Process:** Schema updates follow a change-managed governance process to ensure interoperability across all adopting organizations
+
+### Scope Limitations
+
+This credential:
+- Does NOT grant property ownership rights or control
+- Does NOT contain sensitive financial data (enables access only)
+- Does NOT authorize portfolio changes unless `access_level` is explicitly set to `TRANSACTIONAL`
+
+[↑ Back to top](#table-of-contents)
+
+---
+
+## 8. Implementation References
+
+| Reference               | Value                                                                                          |
+|--------------------------|------------------------------------------------------------------------------------------------|
+| **Technical Format**     | W3C Verifiable Credentials Data Model (JSON-LD)                                                |
+| **Schema URI**           | `https://trustinfrastructure.com/cornerstone/schemas/property-access-authorization.json`       |
+| **Context URLs**         | `https://www.w3.org/ns/credentials/v2` <br/> `https://trustinfrastructure.com/cornerstone/contexts/property-access-authorization-v1.0.json` |
+| **Schema Registry**      | `https://trustinfrastructure.com/cornerstone/schemas/`                                         |
+| **Governance Doc**       | `https://openpropertyassociation.ca/credential-governance/property-access-authorization/`      |
+
+### Required Envelope Fields
+
+Credentials issued under this schema must include:
+- `issuer` — DID of the issuing organization
+- `validFrom` — authorization start (aligned with `start_date`)
+- `validUntil` — if `expiration_date` is set
+- `credentialSchema` — reference to this schema
+- `credentialStatus` — revocation and suspension bitstring entries
+
+### Credential Relationships
+
+| Relationship | Credential |
+|---|---|
+| **Requires (homeowner)** | Cornerstone ID + Home Credential for referenced PID |
+| **Requires (recipient)** | Cornerstone ID |
+| **Independent of** | Professional Credential, Accreditation Credential, Portfolio Issuer |
+
+[↑ Back to top](#table-of-contents)
