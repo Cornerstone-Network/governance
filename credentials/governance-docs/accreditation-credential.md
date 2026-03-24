@@ -84,7 +84,7 @@ The Accreditation Credential schema defines the data structure for a verifiable 
   <tr><th>Description</th><td>Category of the professional's regulated activity. Free-form initially; standardization with a controlled vocabulary is planned.</td></tr>
   <tr><th>Data Type</th><td>String</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Examples</th><td><code>Real Estate Broker</code>, <code>Appraiser</code>, <code>Mortgage Broker</code></td></tr>
+  <tr><th>Examples</th><td><code>Real Estate Professional</code>, <code>Appraiser</code>, <code>Mortgage Broker</code></td></tr>
 </table>
 
 *Licence Number (003)*
