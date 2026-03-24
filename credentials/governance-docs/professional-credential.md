@@ -95,7 +95,7 @@ The Professional Credential schema defines the data structure for a verifiable c
   <tr><th>Description</th><td>The professional's role or title within the organization.</td></tr>
   <tr><th>Data Type</th><td>String</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Examples</th><td><code>Sales Representative</code>, <code>Managing Broker</code>, <code>Property Manager</code></td></tr>
+  <tr><th>Examples</th><td><code>Real Estate Professional</code>, <code>Managing Broker</code>, <code>Property Manager</code></td></tr>
 </table>
 
 *Affiliation Type (004)*
@@ -116,16 +116,6 @@ The Professional Credential schema defines the data structure for a verifiable c
   <tr><th>Data Type</th><td>String (YYYY-MM-DD)</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
   <tr><th>Examples</th><td><code>2020-03-15</code></td></tr>
-</table>
-
-*Team / Office (006)*
-
-<table>
-  <tr><th>Attribute</th><td><code>team_office</code></td></tr>
-  <tr><th>Description</th><td>Specific team, office, or branch within the organization. Optional — not all affiliations are office-specific.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
-  <tr><th>Required</th><td>No</td></tr>
-  <tr><th>Examples</th><td><code>Sutton - Premier Realty (Surrey)</code>, <code>Downtown Toronto Office</code></td></tr>
 </table>
 
 [↑ Back to top](#table-of-contents)
