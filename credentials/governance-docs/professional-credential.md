@@ -58,7 +58,6 @@ The Professional Credential schema defines the data structure for a verifiable c
 | 003   | Role / Title        | `role_title`         | String              | Yes          |
 | 004   | Affiliation Type    | `affiliation_type`   | Enum                | Yes          |
 | 005   | Start Date          | `start_date`         | String (date)       | Yes          |
-| 006   | Team / Office       | `team_office`        | String              | No           |
 
 [↑ Back to top](#table-of-contents)
 
