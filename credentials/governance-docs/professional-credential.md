@@ -7,11 +7,14 @@
 - [2. Schema Overview](#2-schema-overview)
   - [2.1 Attribute Summary](#21-attribute-summary)
 - [3. Schema Definition](#3-schema-definition)
-  - [3.1 Attributes](#31-attributes)
+  - [3.1 Agent Contact Details](#31-agent-contact-details)
+  - [3.2 Office Affiliation](#32-office-affiliation)
+  - [3.3 Professional License (BC)](#33-professional-license-bc)
 - [4. Data Source Requirements](#4-data-source-requirements)
-  - [4.1 Identity Binding](#41-identity-binding)
-  - [4.2 Employer/Organization Verification](#42-employerorganization-verification)
-  - [4.3 Data Currency](#43-data-currency)
+  - [4.1 Agent Contact Details](#41-agent-contact-details)
+  - [4.2 Office Affiliation](#42-office-affiliation)
+  - [4.3 Professional License](#43-professional-license)
+  - [4.4 Data Currency](#44-data-currency)
 - [5. Status Management](#5-status-management)
 - [6. Design Rationale](#6-design-rationale)
 - [7. Governance](#7-governance)
@@ -21,16 +24,17 @@
 
 ## 1. About this Document
 
-This document defines the **Professional Credential** schema — a structured data model for verifiable credentials that attest to a professional's organizational affiliation. It is intended for governance reviewers, schema implementers, credential issuers, and verifier application developers evaluating whether this schema meets their requirements.
+This document defines the **Professional Credential** schema — a structured data model for verifiable credentials that attest to a real estate professional's identity, office affiliation, and professional licensing. It is intended for governance reviewers, schema implementers, credential issuers, and verifier application developers evaluating whether this schema meets their requirements.
 
-The Professional Credential schema captures the relationship between a verified individual and their employer or organization, confirming active affiliation without embedding identity or licensing details.
+The Professional Credential schema is a comprehensive credential that captures who the professional is, where they operate, and under what authority they are licensed — providing a complete professional profile in a single verifiable credential.
 
 ### 1.1 Version History
 
 | Ver.    | Date         | Notes                                                                 | Author(s)       |
 |---------|--------------|-----------------------------------------------------------------------|-----------------|
-| **1.0** | 18-Mar-2026  | Rewritten as schema documentation; v0.9 attribute structure; governance body perspective | Mathieu Glaude  |
-| **0.9** | 26-Feb-2026  | Simplified to 6 attributes; separated licensing into Accreditation Credential; cornerstone_id reference | Mathieu Glaude  |
+| **1.0** | 28-Mar-2026  | Complete revamp: 3 attribute categories (Agent Contact Details, Office Affiliation, Professional License); 18 attributes; re-combines licensing with professional identity | Mathieu Glaude  |
+| **0.4** | 18-Mar-2026  | Rewritten as schema documentation; v0.3 attribute structure; governance body perspective | Mathieu Glaude  |
+| **0.3** | 26-Feb-2026  | Simplified to 6 attributes; separated licensing into Accreditation Credential; cornerstone_id reference | Mathieu Glaude  |
 | **0.2** | 12-Nov-2025  | Restructured into Real Estate Professional with 3 attribute categories | Mathieu Glaude  |
 | **0.1** | 3-Sep-2025   | Initial draft                                                         | Mathieu Glaude  |
 
@@ -40,7 +44,7 @@ The Professional Credential schema captures the relationship between a verified 
 
 ## 2. Schema Overview
 
-The Professional Credential schema defines the data structure for a verifiable credential that attests to a professional's organizational affiliation. It captures the fact that a verified individual is actively affiliated with an employer or organization in a specific role, without embedding identity attributes or professional licensing details — those are handled by the Cornerstone ID and Accreditation Credential schemas respectively.
+The Professional Credential schema defines the data structure for a verifiable credential that provides a complete professional profile for a real estate professional. It combines agent contact information, office affiliation, and professional licensing into a single credential, enabling verifiers to confirm a professional's identity, where they operate, and their regulatory standing.
 
 |                        |                                                                                         |
 |------------------------|-----------------------------------------------------------------------------------------|
@@ -51,13 +55,40 @@ The Professional Credential schema defines the data structure for a verifiable c
 
 ### 2.1 Attribute Summary
 
-| **#** | **Name**            | **Attribute**        | **Data Type**       | **Required** |
-|-------|---------------------|----------------------|---------------------|--------------|
-| 001   | Cornerstone ID Ref  | `cornerstone_id`     | DID / URI           | Yes          |
-| 002   | Employer Name       | `employer_name`      | String              | Yes          |
-| 003   | Role / Title        | `role_title`         | String              | Yes          |
-| 004   | Affiliation Type    | `affiliation_type`   | Enum                | Yes          |
-| 005   | Start Date          | `start_date`         | String (date)       | Yes          |
+**Agent Contact Details**
+
+| **#** | **Name**            | **Attribute**          | **Data Type**         | **Required** |
+|-------|---------------------|------------------------|-----------------------|--------------|
+| 001   | First Name          | `first_name`           | String                | Yes          |
+| 002   | Last Name           | `last_name`            | String                | Yes          |
+| 003   | Telephone Number    | `telephone`            | String (regex)        | Yes          |
+| 004   | Email Address       | `email`                | String (regex)        | Yes          |
+| 005   | PREC Indicator      | `prec`                 | Enum (Y/N)            | Yes          |
+
+> **Note:** When PREC = "Y", the credential card displays the static text "Personal Real Estate Corporation".
+
+**Office Affiliation**
+
+| **#** | **Name**            | **Attribute**          | **Data Type**         | **Required** |
+|-------|---------------------|------------------------|-----------------------|--------------|
+| 006   | Franchise           | `franchise`            | String                | Yes          |
+| 007   | Operating Office    | `operating_office`     | String                | Yes          |
+| 008   | Operating Address   | `operating_address`    | String (Canada Post)  | Yes          |
+| 009   | Title               | `title`                | String                | Yes          |
+| 010   | Since (Year)        | `since_year`           | String (YYYY)         | Yes          |
+
+**Professional License (BC)**
+
+| **#** | **Name**            | **Attribute**          | **Data Type**         | **Required** |
+|-------|---------------------|------------------------|-----------------------|--------------|
+| 011   | License Number      | `license_number`       | String (NNNNNN)       | Yes          |
+| 012   | License Effective Date | `license_effective_date` | String (DD-MM-YYYY) | Yes        |
+| 013   | License Expiry Date | `license_expiry_date`  | String (DD-MM-YYYY)   | Yes          |
+| 014   | Licensed As         | `licensed_as`          | Enum                  | Yes          |
+| 015   | Licensed For        | `licensed_for`         | Enum (multi-select)   | Yes          |
+| 016   | PREC                | `prec`                 | Enum (Y/N)            | Yes          |
+| 017   | Business Name       | `business_name`        | String                | No           |
+| 018   | Issuing Authority   | `issuing_authority`    | Enum                  | Yes          |
 
 [↑ Back to top](#table-of-contents)
 
@@ -65,56 +96,191 @@ The Professional Credential schema defines the data structure for a verifiable c
 
 ## 3. Schema Definition
 
-### 3.1 Attributes
+### 3.1 Agent Contact Details
 
-*Cornerstone ID Reference (001)*
+*First Name (001)*
 
 <table>
-  <tr><th>Attribute</th><td><code>cornerstone_id</code></td></tr>
-  <tr><th>Description</th><td>DID or URI reference to the holder's verified Cornerstone ID credential. Binds this credential to a verified identity without embedding identity attributes.</td></tr>
-  <tr><th>Data Type</th><td>DID / URI</td></tr>
+  <tr><th>Attribute</th><td><code>first_name</code></td></tr>
+  <tr><th>Description</th><td>The professional's given name.</td></tr>
+  <tr><th>Data Type</th><td>String (free text)</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Examples</th><td><code>did:web:trustinfrastructure.com:cornerstone:id:a8f3b2c1</code></td></tr>
+  <tr><th>Examples</th><td><code>Sarah</code>, <code>James</code></td></tr>
 </table>
 
-*Employer Name (002)*
+*Last Name (002)*
 
 <table>
-  <tr><th>Attribute</th><td><code>employer_name</code></td></tr>
-  <tr><th>Description</th><td>Name of the organization with which the professional is affiliated.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
+  <tr><th>Attribute</th><td><code>last_name</code></td></tr>
+  <tr><th>Description</th><td>The professional's family name.</td></tr>
+  <tr><th>Data Type</th><td>String (free text)</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Examples</th><td><code>Sutton Group Realty Inc.</code>, <code>Royal LePage</code></td></tr>
+  <tr><th>Examples</th><td><code>Chen</code>, <code>Williams</code></td></tr>
 </table>
 
-*Role / Title (003)*
+*Telephone Number (003)*
 
 <table>
-  <tr><th>Attribute</th><td><code>role_title</code></td></tr>
-  <tr><th>Description</th><td>The professional's role or title within the organization.</td></tr>
-  <tr><th>Data Type</th><td>String</td></tr>
+  <tr><th>Attribute</th><td><code>telephone</code></td></tr>
+  <tr><th>Description</th><td>The professional's contact telephone number.</td></tr>
+  <tr><th>Data Type</th><td>String (regular expression validated)</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Examples</th><td><code>Real Estate Professional</code>, <code>Managing Broker</code>, <code>Property Manager</code></td></tr>
+  <tr><th>Format</th><td>E.164 or North American format</td></tr>
+  <tr><th>Examples</th><td><code>+16045551234</code>, <code>(604) 555-1234</code></td></tr>
 </table>
 
-*Affiliation Type (004)*
+*Email Address (004)*
 
 <table>
-  <tr><th>Attribute</th><td><code>affiliation_type</code></td></tr>
-  <tr><th>Description</th><td>Nature of the professional's relationship with the organization.</td></tr>
+  <tr><th>Attribute</th><td><code>email</code></td></tr>
+  <tr><th>Description</th><td>The professional's contact email address.</td></tr>
+  <tr><th>Data Type</th><td>String (regular expression validated)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>sarah.chen@suttonrealty.com</code></td></tr>
+</table>
+
+*PREC Indicator (005)*
+
+<table>
+  <tr><th>Attribute</th><td><code>prec</code></td></tr>
+  <tr><th>Description</th><td>Indicates whether the professional operates through a Personal Real Estate Corporation (PREC). When "Y", the credential card displays the static text "Personal Real Estate Corporation".</td></tr>
   <tr><th>Data Type</th><td>Enum</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Values</th><td><code>employee</code>, <code>contractor</code>, <code>delegate</code></td></tr>
+  <tr><th>Values</th><td><code>Y</code>, <code>N</code></td></tr>
 </table>
 
-*Start Date (005)*
+### 3.2 Office Affiliation
+
+*Franchise (006)*
 
 <table>
-  <tr><th>Attribute</th><td><code>start_date</code></td></tr>
-  <tr><th>Description</th><td>Date the professional's affiliation with the organization began, in ISO 8601 format.</td></tr>
-  <tr><th>Data Type</th><td>String (YYYY-MM-DD)</td></tr>
+  <tr><th>Attribute</th><td><code>franchise</code></td></tr>
+  <tr><th>Description</th><td>The real estate franchise or brand the professional is affiliated with.</td></tr>
+  <tr><th>Data Type</th><td>String (free text)</td></tr>
   <tr><th>Required</th><td>Yes</td></tr>
-  <tr><th>Examples</th><td><code>2020-03-15</code></td></tr>
+  <tr><th>Examples</th><td><code>Sutton Group</code>, <code>Royal LePage</code>, <code>RE/MAX</code></td></tr>
+</table>
+
+*Operating Office (007)*
+
+<table>
+  <tr><th>Attribute</th><td><code>operating_office</code></td></tr>
+  <tr><th>Description</th><td>The specific office or branch where the professional operates.</td></tr>
+  <tr><th>Data Type</th><td>String (free text)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>Sutton Group - West Coast Realty</code>, <code>Royal LePage Sterling Realty</code></td></tr>
+</table>
+
+*Operating Address (008)*
+
+<table>
+  <tr><th>Attribute</th><td><code>operating_address</code></td></tr>
+  <tr><th>Description</th><td>The physical address of the operating office, validated against the Canada Post address database.</td></tr>
+  <tr><th>Data Type</th><td>String (Canada Post API validated)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>4555 Kingsway, Burnaby, BC V5H 4T8</code></td></tr>
+</table>
+
+*Title (009)*
+
+<table>
+  <tr><th>Attribute</th><td><code>title</code></td></tr>
+  <tr><th>Description</th><td>The professional's title or role within the office.</td></tr>
+  <tr><th>Data Type</th><td>String (free text)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>Real Estate Professional</code>, <code>Managing Broker</code>, <code>Associate Broker</code></td></tr>
+</table>
+
+*Since Year (010)*
+
+<table>
+  <tr><th>Attribute</th><td><code>since_year</code></td></tr>
+  <tr><th>Description</th><td>The year the professional began their affiliation with the office.</td></tr>
+  <tr><th>Data Type</th><td>String (YYYY, regular expression validated)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>2018</code>, <code>2023</code></td></tr>
+</table>
+
+### 3.3 Professional License (BC)
+
+*License Number (011)*
+
+<table>
+  <tr><th>Attribute</th><td><code>license_number</code></td></tr>
+  <tr><th>Description</th><td>The professional's BC real estate license number, issued by the regulatory authority.</td></tr>
+  <tr><th>Data Type</th><td>String (6-digit numeric: NNNNNN)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>123456</code>, <code>078901</code></td></tr>
+</table>
+
+*License Effective Date (012)*
+
+<table>
+  <tr><th>Attribute</th><td><code>license_effective_date</code></td></tr>
+  <tr><th>Description</th><td>The date the professional's license became effective.</td></tr>
+  <tr><th>Data Type</th><td>String (DD-MM-YYYY)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>15-03-2020</code></td></tr>
+</table>
+
+*License Expiry Date (013)*
+
+<table>
+  <tr><th>Attribute</th><td><code>license_expiry_date</code></td></tr>
+  <tr><th>Description</th><td>The date the professional's license expires and must be renewed.</td></tr>
+  <tr><th>Data Type</th><td>String (DD-MM-YYYY)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Examples</th><td><code>14-03-2026</code></td></tr>
+</table>
+
+*Licensed As (014)*
+
+<table>
+  <tr><th>Attribute</th><td><code>licensed_as</code></td></tr>
+  <tr><th>Description</th><td>The category of license held by the professional.</td></tr>
+  <tr><th>Data Type</th><td>Enum</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Values</th><td><code>Representative</code>, <code>Associate Broker</code>, <code>Managing Broker</code></td></tr>
+</table>
+
+*Licensed For (015)*
+
+<table>
+  <tr><th>Attribute</th><td><code>licensed_for</code></td></tr>
+  <tr><th>Description</th><td>The service categories the professional is licensed to perform. A professional may hold licenses for multiple service categories.</td></tr>
+  <tr><th>Data Type</th><td>Enum (multi-select)</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Values</th><td><code>Trading Services</code>, <code>Rental Property Management Services</code>, <code>Strata Managing Services</code></td></tr>
+</table>
+
+*PREC (016)*
+
+<table>
+  <tr><th>Attribute</th><td><code>prec</code></td></tr>
+  <tr><th>Description</th><td>Indicates whether the professional operates through a Personal Real Estate Corporation (PREC).</td></tr>
+  <tr><th>Data Type</th><td>Enum</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Values</th><td><code>Y</code>, <code>N</code></td></tr>
+</table>
+
+*Business Name (017)*
+
+<table>
+  <tr><th>Attribute</th><td><code>business_name</code></td></tr>
+  <tr><th>Description</th><td>The name of the Personal Real Estate Corporation or business entity, if applicable. Required when PREC = "Y".</td></tr>
+  <tr><th>Data Type</th><td>String (free text)</td></tr>
+  <tr><th>Required</th><td>No (conditional — required when PREC = "Y")</td></tr>
+  <tr><th>Examples</th><td><code>Chen Realty Corp.</code></td></tr>
+</table>
+
+*Issuing Authority (018)*
+
+<table>
+  <tr><th>Attribute</th><td><code>issuing_authority</code></td></tr>
+  <tr><th>Description</th><td>The regulatory body that issued the professional license.</td></tr>
+  <tr><th>Data Type</th><td>Enum</td></tr>
+  <tr><th>Required</th><td>Yes</td></tr>
+  <tr><th>Values</th><td><code>BCFSA</code> (BC Financial Services Authority)</td></tr>
 </table>
 
 [↑ Back to top](#table-of-contents)
@@ -125,19 +291,23 @@ The Professional Credential schema defines the data structure for a verifiable c
 
 Credentials issued under this schema are expected to draw from the following authoritative sources.
 
-### 4.1 Identity Binding
+### 4.1 Agent Contact Details
 
-The `cornerstone_id` attribute references a separately issued Cornerstone ID credential, which provides high-assurance identity verification. This schema does not embed identity attributes directly.
+Contact information (`first_name`, `last_name`, `telephone`, `email`) is provided by the professional and verified by the issuing organization. The PREC indicator is sourced from the regulatory authority's records.
 
-### 4.2 Employer/Organization Verification
+### 4.2 Office Affiliation
 
-Employer data (`employer_name`, `role_title`, `affiliation_type`, `start_date`, `team_office`) is provided by the employer's system of record (e.g., HR system, brokerage management platform). The employer confirms the professional's active affiliation out-of-band before a credential is issued.
+Office affiliation data (`franchise`, `operating_office`, `operating_address`, `title`, `since_year`) is provided by the employer's system of record (e.g., brokerage management platform). The employer confirms the professional's active affiliation out-of-band before a credential is issued. The `operating_address` is validated against the Canada Post address database to ensure standardized, deliverable addresses.
 
-### 4.3 Data Currency
+### 4.3 Professional License
 
-- A credential reflects the state of affiliation at the time of issuance.
-- Employment termination, role changes, or organizational changes require credential revocation.
-- A `status` attribute was intentionally omitted — a credential attesting `status: terminated` is semantically contradictory. Status changes are handled via the Bitstring Status List (see Section 5).
+Licensing data (`license_number`, `license_effective_date`, `license_expiry_date`, `licensed_as`, `licensed_for`, `issuing_authority`) is sourced from the regulatory authority (BCFSA for British Columbia). The `business_name` is sourced from the PREC registry when applicable.
+
+### 4.4 Data Currency
+
+- A credential reflects the state of the professional's contact details, office affiliation, and licensing at the time of issuance.
+- Changes to any of the following require credential revocation and re-issuance: office affiliation, license status, licensed categories, or PREC status.
+- Contact detail updates (telephone, email) may be handled via credential refresh without revocation, at the issuer's discretion.
 
 [↑ Back to top](#table-of-contents)
 
@@ -149,11 +319,13 @@ This schema requires credentials to implement **W3C Bitstring Status List v1.1**
 
 | Event                    | Action              | Status Handling                           |
 |--------------------------|---------------------|-------------------------------------------|
-| Affiliation confirmed    | Issue credential    | Index set to 0 (valid)                    |
+| Credential issued        | Issue credential    | Index set to 0 (valid)                    |
 | Employment terminated    | Revoke              | Revocation bit = 1 (permanent)            |
-| Role change              | Revoke + re-issue   | Old revoked; new credential index = 0     |
-| Leave of absence         | Suspend             | Suspension bit = 1 (reversible)           |
-| Return from leave        | Reinstate           | Suspension bit = 0                        |
+| Office change            | Revoke + re-issue   | Old revoked; new credential index = 0     |
+| License expired          | Revoke              | Revocation bit = 1 (permanent)            |
+| License renewed          | Revoke + re-issue   | Old revoked; new credential with updated dates |
+| License suspended        | Suspend             | Suspension bit = 1 (reversible)           |
+| License reinstated       | Reinstate           | Suspension bit = 0                        |
 | Fraud detected           | Revoke              | Revocation bit = 1 (permanent)            |
 
 [↑ Back to top](#table-of-contents)
@@ -162,17 +334,17 @@ This schema requires credentials to implement **W3C Bitstring Status List v1.1**
 
 ## 6. Design Rationale
 
-**Separation from Accreditation (v0.9):** Earlier versions (v0.1–v0.2) combined organizational affiliation with professional licensing in a single 24-attribute "Verified Real Estate Professional" schema. This was split into two independent schemas:
-- **Professional Credential** — organizational affiliation (this schema)
-- **Accreditation Credential** — professional licensing from a regulator
+**Re-combination of professional identity and licensing (v1.0):** Versions 0.3–0.4 separated organizational affiliation from professional licensing into two independent credentials (Professional Credential and Accreditation Credential). After stakeholder feedback and real-world implementation planning, these have been re-combined into a single comprehensive Professional Credential. The rationale: in practice, a real estate professional's identity, office affiliation, and license status are verified together and consumed together. Splitting them created unnecessary complexity for issuers and verifiers without meaningful benefit.
 
-A holder may possess only a Professional Credential (employed but unlicensed), only an Accreditation Credential (licensed but not currently affiliated), or both. This separation follows the principle that each credential attests to a single verifiable fact.
+**Three attribute categories:** The schema is organized into logical groups — Agent Contact Details, Office Affiliation, and Professional License — making it clear where each data point originates and how it should be verified.
 
-**Identity reference, not embedding:** Four identity attributes were replaced with a single `cornerstone_id` reference, following the atomicity principle aligned with the vLEI chained credential model.
+**PREC as a first-class attribute:** The Personal Real Estate Corporation indicator is important in BC real estate. When PREC = "Y", the credential card displays "Personal Real Estate Corporation" as static text, and the `business_name` field becomes conditionally required.
 
-**No `status` field:** A credential asserting `status: terminated` is semantically contradictory. Status changes are managed externally via the W3C Bitstring Status List without credential re-issuance.
+**Canada Post API for addresses:** The `operating_address` field requires validation against the Canada Post address database, ensuring standardized and deliverable addresses across all credentials.
 
-**Simplified attribute set:** Attributes like `specialties`, `service_areas`, `join_year`, and `employer_evidence` were removed. The schema focuses on what can be authoritatively verified by the employer — affiliation, role, and start date. Profile-level details belong in application-layer data, not verifiable credentials.
+**Multi-select for Licensed For:** A professional may be licensed for multiple service categories simultaneously (e.g., both Trading Services and Rental Property Management Services). The multi-select enum supports this without requiring multiple credentials.
+
+**BC-specific licensing section:** The Professional License section is scoped to BC (BCFSA) as the initial jurisdiction. Future versions may add jurisdiction-specific sections for other provinces or US states.
 
 [↑ Back to top](#table-of-contents)
 
